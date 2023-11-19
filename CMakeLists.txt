@@ -3,7 +3,8 @@ project(HoustonV2)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(HoustonV2 main.cpp)
+add_executable(HoustonV2 main.cpp
+        SerialHelper.h)
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(HoustonV2 PRIVATE glad::glad)
 find_package(asio CONFIG REQUIRED)
