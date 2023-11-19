@@ -63,7 +63,7 @@ jobs:
 
     - name: Install vcpkg packages
       run: |
-        ./vcpkg/vcpkg install <package1> <package2> <package3>
+        ./vcpkg/vcpkg install
       shell: bash
 
     - name: Configure and build with CMake
