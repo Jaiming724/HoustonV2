@@ -1,0 +1,14 @@
+{
+  "name": "houstonv2",
+  "version": "0.0.1",
+  "dependencies": [
+    "glfw3",
+    "glad",
+    "asio",
+    {
+      "name": "imgui",
+      "features": [ "glfw-binding", "opengl3-binding","docking-experimental"]
+    }
+
+  ]
+}
