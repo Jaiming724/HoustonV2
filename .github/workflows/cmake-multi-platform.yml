@@ -53,6 +53,15 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+    - name: Check if OS is Linux
+      run: |
+        if [ "${RUNNER_OS}" == "Linux" ]; then
+          echo "Running on Linux! Installing zip..."
+          sudo apt-get update
+          sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
+        else
+          echo "Not running on Linux."
+        fi
     - name: Install vcpkg
       run: |
         git clone https://github.com/microsoft/vcpkg.git
@@ -73,7 +82,11 @@ jobs:
         cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
         cmake --build .
       shell: bash
-
+    - name: Save binary as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: my-binary-artifact
+        path: build
     # - name: Configure CMake
     #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
     #   # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
