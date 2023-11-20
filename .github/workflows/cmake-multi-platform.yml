@@ -27,6 +27,7 @@ jobs:
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
         include:
+          - os: macos-latest
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
@@ -62,6 +63,7 @@ jobs:
         else
           echo "Not running on Linux."
         fi
+      shell: bash
     - name: Install vcpkg
       run: |
         git clone https://github.com/microsoft/vcpkg.git
