@@ -1,17 +1,11 @@
-// Dear ImGui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
-// (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
 
-// Learn about Dear ImGui:
-// - FAQ                  https://dearimgui.com/faq
-// - Getting Started      https://dearimgui.com/getting-started
-// - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
-// - Introduction, links and more at the top of imgui.cpp
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <asio.hpp>
 #include "SerialHelper.h"
+#include "Setting.h"
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -39,13 +33,7 @@ static void glfw_error_callback(int error, const char *description) {
 }
 
 
-const char *msg = "msg1";
-
-void print(const asio::error_code & /*e*/) {
-    msg = "msg2";
-}
-
-SerialHelper reader("COM3"); // Replace "COM1" with your serial port name
+SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
 
 // Main code
 int main(int, char **) {
@@ -217,7 +205,7 @@ int main(int, char **) {
         // Row 1
         ImGui::Text("Item 1");
         ImGui::NextColumn();
-        ImGui::Text("%s", msg);
+        ImGui::Text("%s", "testing");
         //count += 1;
         ImGui::NextColumn();
 
@@ -233,11 +221,31 @@ int main(int, char **) {
 
         // End the window
         ImGui::End();
-        ImGui::ShowDemoWindow();
+        ImGui::Begin("Serial Port Example");
+        static char inputText[256] = "Hello"; // Buffer to store input text
+
+        ImGui::InputText("Enter Text", inputText, IM_ARRAYSIZE(inputText));
+        if (Setting::isEnable) {
+            if (ImGui::Button("Detach")) {
+                Setting::isEnable = false;
+                reader.close();
+            }
+        } else {
+            if (ImGui::Button("Attach")) {
+                Setting::isEnable = true;
+                Setting::portName = inputText;
+                reader.open(Setting::portName);
+            }
+        }
         ImGui::End();
 
-
-        reader.readAndPrintLines();
+        ImGui::End();
+//
+        if(Setting::isEnable){
+            std::cout<<"Error"<<std::endl;
+            reader.readAndPrintLines();
+        }
+        // reader.readAndPrintLines();
         // Rendering
         ImGui::Render();
         int display_w, display_h;
