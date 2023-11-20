@@ -34,9 +34,6 @@ jobs:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -87,7 +84,7 @@ jobs:
     - name: Save binary as artifact
       uses: actions/upload-artifact@v2
       with:
-        name: my-binary-artifact
+        name: "${RUNNER_OS}" 
         path: build
     # - name: Configure CMake
     #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
