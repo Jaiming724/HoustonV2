@@ -5,7 +5,10 @@
 #include "imgui_impl_opengl3.h"
 #include <asio.hpp>
 #include "SerialHelper.h"
+#include "Component.h"
+#include "ControlPanel.h"
 #include "Setting.h"
+#include "TelemetryPanel.h"
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -34,9 +37,13 @@ static void glfw_error_callback(int error, const char *description) {
 
 
 SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
+std::vector<Component *> components = std::vector<Component *>();
 
 // Main code
 int main(int, char **) {
+    components.push_back(new ControlPanel("Control Panel", &reader));
+    components.push_back(new TelemetryPanel("Telemetry Panel"));
+
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -193,57 +200,18 @@ int main(int, char **) {
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         }
 
-        //ImGui::ShowDemoWindow();
 
-        // Create a window
-        ImGui::Begin("2-Row Table Example");
 
-        // Create a 2-row table
-        ImGui::Columns(2, "MyColumns");
-        ImGui::Separator();
-
-        // Row 1
-        ImGui::Text("Item 1");
-        ImGui::NextColumn();
-        ImGui::Text("%s", "testing");
-        //count += 1;
-        ImGui::NextColumn();
-
-        // Row 2
-        ImGui::Text("Item2");
-        ImGui::NextColumn();
-        ImGui::Text("Value2");
-        ImGui::NextColumn();
-
-        // End the table
-        ImGui::Columns(1);
-        ImGui::Separator();
-
-        // End the window
-        ImGui::End();
-        ImGui::Begin("Serial Port Example");
-        static char inputText[256] = "Hello"; // Buffer to store input text
-
-        ImGui::InputText("Enter Text", inputText, IM_ARRAYSIZE(inputText));
-        if (Setting::isEnable) {
-            if (ImGui::Button("Detach")) {
-                Setting::isEnable = false;
-                reader.close();
-            }
-        } else {
-            if (ImGui::Button("Attach")) {
-                Setting::isEnable = true;
-                Setting::portName = inputText;
-                reader.open(Setting::portName);
-            }
+        for (auto component: components) {
+            component->render();
         }
+        ImGui::ShowDemoWindow();
+        //end docking
         ImGui::End();
 
-        ImGui::End();
-//
-        if(Setting::isEnable){
-            std::cout<<"Error"<<std::endl;
+        if (Setting::isEnable) {
             reader.readAndPrintLines();
+            //std::cout<<Setting::serialStr<<std::endl;
         }
         // reader.readAndPrintLines();
         // Rendering
@@ -282,7 +250,5 @@ int main(int, char **) {
 
     return 0;
 }
-
-
 
 

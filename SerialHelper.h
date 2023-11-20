@@ -4,14 +4,19 @@
 #include <string>
 #include <vector>
 #include <asio.hpp>
+#include "Setting.h"
+class ser;
 
 class SerialHelper {
 private:
     asio::io_service io;
     asio::serial_port port;
+    std::string *line = new std::string();
+
 public:
     SerialHelper() : io(), port(io) {
     }
+
     void open(const std::string &port_name) {
         port.open(port_name);
 
@@ -26,23 +31,21 @@ public:
     }
 
     virtual ~SerialHelper() {
+        std::cout<<"SerialHelper::~SerialHelper()"<<std::endl;
         port.close();
+        delete line;
     }
 
     void readAndPrintLines() {
         char c;
-        std::string line;
-
+        line->clear();
         try {
             while (read(port, asio::buffer(&c, 1))) {
                 if (c == '\n') {
-                    // Process the complete line
-                    std::cout << "Received line: " << line << std::endl;
-                    line.clear();
+                    Setting::serialStr = *line;
                     break;
                 } else {
-                    // Append character to the current line
-                    line += c;
+                    *(line) += c;
                 }
             }
         } catch (const std::exception &e) {

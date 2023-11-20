@@ -3,6 +3,7 @@
 #include <string>
 
 namespace Setting{
-    bool isEnable = false;
-    std::string portName = "";
+    extern bool isEnable;
+    extern std::string portName;
+    extern std::string serialStr;
 }
