@@ -41,6 +41,8 @@ jobs:
             c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
+          - os: macos-latest
+            c_compiler: cl
 
     steps:
     - uses: actions/checkout@v3
@@ -82,9 +84,9 @@ jobs:
         cmake --build .
       shell: bash
     - name: Save binary as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: ${RUNNER_OS} 
+        name: ${{ runner.os }}-binary 
         path: build
     # - name: Configure CMake
     #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
