@@ -9,7 +9,7 @@
 #include "ControlPanel.h"
 #include "Setting.h"
 #include "TelemetryPanel.h"
-
+#include "implot.h"
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -81,6 +81,7 @@ int main(int, char **) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -205,7 +206,8 @@ int main(int, char **) {
         for (auto component: components) {
             component->render();
         }
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDebugLogWindow();
+        //ImPlot::ShowDemoWindow();
         //end docking
         ImGui::End();
 
@@ -244,6 +246,7 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+    ImPlot::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();

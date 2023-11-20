@@ -11,7 +11,7 @@ void ControlPanel::start() {
 
 void ControlPanel::render() {
     ImGui::Begin("Serial Port Example");
-    static char inputText[256] = "Hello"; // Buffer to store input text
+    static char inputText[256] = "COM3"; // Buffer to store input text
     ImGui::InputText("Enter Text", inputText, IM_ARRAYSIZE(inputText));
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
