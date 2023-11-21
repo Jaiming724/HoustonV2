@@ -6,6 +6,7 @@
 class ControlPanel : public Component {
 private:
     SerialHelper *reader;
+
 public:
 
     ControlPanel(const char *name, SerialHelper *reader) : Component(name) {

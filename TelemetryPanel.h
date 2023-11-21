@@ -26,5 +26,5 @@ public:
     void render() override;
 
     void stop() override;
-    void Demo_DigitalPlots();
+    void graphData();
 };

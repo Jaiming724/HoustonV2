@@ -10,9 +10,9 @@ void ControlPanel::start() {
 }
 
 void ControlPanel::render() {
-    ImGui::Begin("Serial Port Example");
+    ImGui::Begin("Control Panel");
     static char inputText[256] = "COM3"; // Buffer to store input text
-    ImGui::InputText("Enter Text", inputText, IM_ARRAYSIZE(inputText));
+    ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
             Setting::isEnable = false;
@@ -25,6 +25,7 @@ void ControlPanel::render() {
             reader->open(Setting::portName);
         }
     }
+    ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
 }
 

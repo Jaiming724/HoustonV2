@@ -49,7 +49,7 @@ void TelemetryPanel::render() {
     }
     ImGui::End();
     ImGui::Begin("Digital Plots");
-    Demo_DigitalPlots();
+    graphData();
     ImGui::End();
 
 }
@@ -64,7 +64,7 @@ TelemetryPanel::~TelemetryPanel() {
 }
 
 
-void TelemetryPanel::Demo_DigitalPlots() {
+void TelemetryPanel::graphData() {
 
     char label[32];
     for (int i = 0; i < keySize; i++) {

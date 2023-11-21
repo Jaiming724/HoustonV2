@@ -33,7 +33,6 @@ void AlertPanel::render() {
         ImGui::SetScrollHereY(1.0f);
     }
     ImGui::End();
-    ImGui::ShowDemoWindow();
 }
 
 void AlertPanel::stop() {

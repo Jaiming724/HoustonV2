@@ -22,7 +22,7 @@ public:
     void open(const std::string &port_name) {
         port.open(port_name);
 
-        port.set_option(asio::serial_port_base::baud_rate(9600));
+        port.set_option(asio::serial_port_base::baud_rate(115200));
         port.set_option(asio::serial_port_base::character_size(8));
         port.set_option(asio::serial_port_base::stop_bits(asio::serial_port_base::stop_bits::one));
         port.set_option(asio::serial_port_base::parity(asio::serial_port_base::parity::none));
