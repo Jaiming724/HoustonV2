@@ -151,7 +151,9 @@ int main(int, char **) {
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-
+        if (Setting::isEnable) {
+            reader.readAndPrintLines();
+        }
         glfwPollEvents();
 
         // Start the Dear ImGui frame
@@ -210,16 +212,10 @@ int main(int, char **) {
         for (auto component: components) {
             component->render();
         }
-        //ImGui::ShowDebugLogWindow();
-        //ImPlot::ShowDemoWindow();
         //end docking
         ImGui::End();
 
-        if (Setting::isEnable) {
-            reader.readAndPrintLines();
-            //std::cout<<Setting::serialStr<<std::endl;
-        }
-        // reader.readAndPrintLines();
+
         // Rendering
         ImGui::Render();
         int display_w, display_h;

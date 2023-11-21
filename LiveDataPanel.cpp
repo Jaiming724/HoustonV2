@@ -14,9 +14,10 @@ void LiveDataPanel::start() {
 }
 
 void LiveDataPanel::render() {
-    if (Setting::serialStr.length() >= 5 && Setting::serialStr.compare(0, 5, "CWCM!", 0, 5) == 0) {
+    //std::cout<<Setting::modifyStr<<std::endl;
+    if (Setting::modifyStr.length() >= 5) {
 
-        std::string remainingString = Setting::serialStr.substr(5);
+        std::string remainingString = Setting::modifyStr.substr(5);
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (int i = 0; i < tokens.size() - 1; i++) {
             if (tokens[i].at(0) == 'I' && intMap.count(tokens[i]) == 0) {

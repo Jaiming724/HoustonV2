@@ -15,13 +15,15 @@ void AlertPanel::start() {
 }
 
 void AlertPanel::render() {
-    if (Setting::serialStr.length() >= 5 && Setting::serialStr.compare(0, 5, "CWCA!", 0, 5) == 0) {
-        std::string remainingString = Setting::serialStr.substr(5);
+    if (Setting::alertStr.length() >= 5) {
+        std::string remainingString = Setting::alertStr.substr(5);
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (int i = 0; i < tokens.size()-1; i++) {
             alerts.push_back(tokens.at(i));
         }
+        Setting::alertStr = "";
     }
+
     ImGui::Begin("Alerts");
     for (auto &s: alerts) {
         ImGui::Text("%s", s.c_str());

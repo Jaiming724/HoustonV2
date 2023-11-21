@@ -1,5 +1,6 @@
 #include <vector>
 #include <iostream>
+#include <chrono>
 #include "TelemetryPanel.h"
 #include "Setting.h"
 #include "Util.h"
@@ -11,10 +12,17 @@ void TelemetryPanel::start() {
 
 
 void TelemetryPanel::render() {
-    if (Setting::serialStr.length() >= 4 && Setting::serialStr.compare(0, 4, "CWC!", 0, 4) == 0) {
+    //auto currentTime = std::chrono::system_clock::now();
+
+    //auto currentTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(currentTime);
+
+    // Get the actual time in milliseconds
+    //auto timeMs = currentTimeMs.time_since_epoch().count();
+    //std::cout<<timeMs<<" " <<Setting::telemetryStr<<std::endl;
+    if (Setting::telemetryStr.length() >= 4) {
         keys.clear();
         values.clear();
-        std::string remainingString = Setting::serialStr.substr(4);
+        std::string remainingString = Setting::telemetryStr.substr(4);
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (auto &s: tokens) {
             std::vector<std::string> keyValue = Util::splitString(s, ':');
