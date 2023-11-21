@@ -5,6 +5,8 @@
 #include <vector>
 #include <asio.hpp>
 #include "Setting.h"
+#include "Util.h"
+
 class ser;
 
 class SerialHelper {
@@ -31,9 +33,28 @@ public:
     }
 
     virtual ~SerialHelper() {
-        std::cout<<"SerialHelper::~SerialHelper()"<<std::endl;
+        std::cout << "SerialHelper::~SerialHelper()" << std::endl;
         port.close();
         delete line;
+    }
+
+    void write(Util::ModifyPacket *modifyPacket) {
+        char temp[7] = {0};
+        memcpy(temp, modifyPacket->string_data, 3);
+        memcpy(temp + 3, &modifyPacket->int_data, 4);
+        uint32_t checksum = Util::crc32(temp, 7);
+        char buf[14] = {0};
+
+        memcpy(buf, &modifyPacket->packet_id, 1);
+        memcpy(buf + 1, &modifyPacket->packet_length, 2);
+        memcpy(buf + 3, modifyPacket->string_data, 3);
+        memcpy(buf + 6, &modifyPacket->int_data, 4);
+        memcpy(buf + 10, &checksum, 4);
+        asio::write(port, asio::buffer(buf, 14));
+        if(memcmp(modifyPacket->string_data, "BRE", 3) == 0 && modifyPacket->int_data == 1) {
+            Setting::isEnable=false;
+            close();
+        }
     }
 
     void readAndPrintLines() {
@@ -43,6 +64,7 @@ public:
             while (read(port, asio::buffer(&c, 1))) {
                 if (c == '\n') {
                     Setting::serialStr = *line;
+                    //std::cout << *line << std::endl;
                     break;
                 } else {
                     *(line) += c;

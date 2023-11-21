@@ -13,7 +13,11 @@ add_executable(HoustonV2 main.cpp
         ControlPanel.h
         TelemetryPanel.cpp
         TelemetryPanel.h
-        Util.h)
+        Util.h
+        AlertPanel.cpp
+        AlertPanel.h
+        LiveDataPanel.cpp
+        LiveDataPanel.h)
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(HoustonV2 PRIVATE glad::glad)
 find_package(asio CONFIG REQUIRED)

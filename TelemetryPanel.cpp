@@ -45,6 +45,7 @@ void TelemetryPanel::render() {
         ImGui::NextColumn();
         ImGui::Text("%s", values[i].c_str());
         ImGui::NextColumn();
+        ImGui::Separator();
     }
     ImGui::End();
     ImGui::Begin("Digital Plots");
@@ -85,7 +86,7 @@ void TelemetryPanel::Demo_DigitalPlots() {
             }
         }
     }
-    if (ImPlot::BeginPlot("##Digital")) {
+    if (ImPlot::BeginPlot("##Digital",ImVec2(-1,-1),ImPlotAxisFlags_AutoFit)) {
         ImPlot::SetupAxisLimits(ImAxis_X1, t - 10.0, t, paused ? ImGuiCond_Once : ImGuiCond_Always);
         ImPlot::SetupAxisLimits(ImAxis_Y1, -1, 1);
 
@@ -97,6 +98,7 @@ void TelemetryPanel::Demo_DigitalPlots() {
                                      dataAnalog[i].Data.size(), 0, dataAnalog[i].Offset, 2 * sizeof(float));
             }
         }
+
         ImPlot::EndPlot();
     }
 }

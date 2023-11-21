@@ -10,6 +10,9 @@
 #include "Setting.h"
 #include "TelemetryPanel.h"
 #include "implot.h"
+#include "AlertPanel.h"
+#include "LiveDataPanel.h"
+
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -43,6 +46,8 @@ std::vector<Component *> components = std::vector<Component *>();
 int main(int, char **) {
     components.push_back(new ControlPanel("Control Panel", &reader));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
+    components.push_back(new AlertPanel("Alert Panel"));
+    components.push_back(new LiveDataPanel("Live Data", &reader));
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -200,7 +205,6 @@ int main(int, char **) {
             ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         }
-
 
 
         for (auto component: components) {
