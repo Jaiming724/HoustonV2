@@ -65,6 +65,7 @@ public:
             while (read(port, asio::buffer(&c, 1))) {
                 if (c == '\n') {
                     if (line->length() >= 4 && line->compare(0, 4, "CWC!", 0, 4) == 0) {
+                        //std::cout << *line << std::endl;
                         Setting::telemetryStr = std::string(*line);
                     } else if (line->length() >= 5 &&line->compare(0, 5, "CWCA!", 0, 5) == 0) {
                         Setting::alertStr = std::string(*line);

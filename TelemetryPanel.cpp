@@ -32,10 +32,8 @@ void TelemetryPanel::render() {
             }
         }
         if (dataAnalog == nullptr || showAnalog == nullptr || keySize != keys.size()) {
-            if (dataAnalog != nullptr) {
-                delete dataAnalog;
-                delete showAnalog;
-            }
+            delete[] dataAnalog;
+            delete[] showAnalog;
             dataAnalog = new Util::ScrollingBuffer[keys.size()];
             showAnalog = new bool[keys.size()]{false};
             keySize = keys.size();
@@ -94,7 +92,7 @@ void TelemetryPanel::graphData() {
             }
         }
     }
-    if (ImPlot::BeginPlot("##Digital",ImVec2(-1,-1),ImPlotAxisFlags_AutoFit)) {
+    if (ImPlot::BeginPlot("##Digital", ImVec2(-1, -1), ImPlotAxisFlags_AutoFit)) {
         ImPlot::SetupAxisLimits(ImAxis_X1, t - 10.0, t, paused ? ImGuiCond_Once : ImGuiCond_Always);
         ImPlot::SetupAxisLimits(ImAxis_Y1, -1, 1);
 
