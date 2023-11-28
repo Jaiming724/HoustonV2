@@ -15,7 +15,7 @@ void AlertPanel::start() {
 }
 
 void AlertPanel::render() {
-    if (Setting::alertStr.length() >= 5) {
+    if (Setting::alertStr.length() >= 7) {
         std::string remainingString = Setting::alertStr.substr(5);
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (int i = 0; i < tokens.size()-1; i++) {

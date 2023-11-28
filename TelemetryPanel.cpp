@@ -31,13 +31,16 @@ void TelemetryPanel::render() {
                 values.push_back(keyValue[1]);
             }
         }
-        if (dataAnalog == nullptr || showAnalog == nullptr || keySize != keys.size()) {
-            delete[] dataAnalog;
-            delete[] showAnalog;
-            dataAnalog = new Util::ScrollingBuffer[keys.size()];
-            showAnalog = new bool[keys.size()]{false};
-            keySize = keys.size();
-        }
+
+//        if (dataAnalog == nullptr || showAnalog == nullptr || keySize != keys.size()) {
+//            delete[] dataAnalog;
+//            delete[] showAnalog;
+//            dataAnalog= nullptr;
+//            showAnalog= nullptr;
+//            dataAnalog = new Util::ScrollingBuffer[keys.size()];
+//            showAnalog = new bool[keys.size()]{false};
+//            keySize = keys.size();
+//        }
 
     }
 
@@ -54,9 +57,9 @@ void TelemetryPanel::render() {
         ImGui::Separator();
     }
     ImGui::End();
-    ImGui::Begin("Digital Plots");
-    graphData();
-    ImGui::End();
+//    ImGui::Begin("Digital Plots");
+//    graphData();
+//    ImGui::End();
 
 }
 
@@ -65,8 +68,8 @@ void TelemetryPanel::stop() {
 }
 
 TelemetryPanel::~TelemetryPanel() {
-    delete dataAnalog;
-    delete showAnalog;
+    delete[] dataAnalog;
+    delete[] showAnalog;
 }
 
 
