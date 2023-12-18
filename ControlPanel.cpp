@@ -11,7 +11,7 @@ void ControlPanel::start() {
 
 void ControlPanel::render() {
     ImGui::Begin("Control Panel");
-    static char inputText[256] = "COM3"; // Buffer to store input text
+    static char inputText[256] = "COM4"; // Buffer to store input text
     ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
