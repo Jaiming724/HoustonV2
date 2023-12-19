@@ -41,6 +41,12 @@ static void glfw_error_callback(int error, const char *description) {
 
 SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
 std::vector<Component *> components = std::vector<Component *>();
+bool shouldRead = true;
+void readSerial() {
+    while (shouldRead) {
+        reader.readAndPrintLines();
+    }
+}
 
 // Main code
 int main(int, char **) {
@@ -52,7 +58,8 @@ int main(int, char **) {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
-
+    std::thread t1(readSerial);
+    t1.detach();
     // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
@@ -81,7 +88,7 @@ int main(int, char **) {
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0); // Enable vsync
+    glfwSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -151,9 +158,9 @@ int main(int, char **) {
         // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
         // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
         // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-        if (Setting::isEnable) {
-            reader.readAndPrintLines();
-        }
+//        if (Setting::isEnable) {
+//            reader.readAndPrintLines();
+//        }
         glfwPollEvents();
 
         // Start the Dear ImGui frame
@@ -241,7 +248,7 @@ int main(int, char **) {
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;
 #endif
-
+    shouldRead = false;
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

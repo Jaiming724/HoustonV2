@@ -16,8 +16,9 @@ void LiveDataPanel::start() {
 void LiveDataPanel::render() {
     //std::cout<<Setting::modifyStr<<std::endl;
     if (Setting::modifyStr.length() >= 5) {
-
+        Setting::modifyMutex.lock();
         std::string remainingString = Setting::modifyStr.substr(5);
+        Setting::modifyMutex.unlock();
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (int i = 0; i < tokens.size() - 1; i++) {
             if (tokens[i].at(0) == 'I' && intMap.count(tokens[i]) == 0) {
@@ -41,7 +42,7 @@ void LiveDataPanel::render() {
     for (const auto &it: floatMap) {
         if (ImGui::InputFloat(it.first.c_str(), it.second, 1, 100, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
             Util::ModifyPacket modifyPacket;
-            modifyPacket.float_data = *it.second ;
+            modifyPacket.float_data = *it.second;
             memcpy(modifyPacket.string_data, it.first.c_str(), 3);
             serialHelper->write(&modifyPacket);
         }

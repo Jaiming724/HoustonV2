@@ -39,7 +39,7 @@ public:
     }
 
     void write(Util::ModifyPacket *modifyPacket) {
-        std::cout<<"write"<<std::endl;
+        std::cout << "write" << std::endl;
         char temp[7] = {0};
         memcpy(temp, modifyPacket->string_data, 3);
         memcpy(temp + 3, &modifyPacket->int_data, 4);
@@ -59,17 +59,27 @@ public:
     }
 
     void readAndPrintLines() {
+        if (!Setting::isEnable) {
+
+            return;
+        }
         char c;
         line->clear();
         try {
             while (read(port, asio::buffer(&c, 1))) {
                 if (c == '\n') {
                     if (line->length() >= 4 && line->compare(0, 4, "CWC!", 0, 4) == 0) {
+                        Setting::telemetryMutex.lock();
                         Setting::telemetryStr = std::string(*line);
-                    } else if (line->length() >= 5 &&line->compare(0, 5, "CWCA!", 0, 5) == 0) {
+                        Setting::telemetryMutex.unlock();
+                    } else if (line->length() >= 5 && line->compare(0, 5, "CWCA!", 0, 5) == 0) {
+                        Setting::alertMutex.lock();
                         Setting::alertStr = std::string(*line);
-                    }else if(line->length() >= 5 && line->compare(0, 5, "CWCM!", 0, 5) == 0){
-                        Setting::modifyStr =std::string(*line);
+                        Setting::alertMutex.unlock();
+                    } else if (line->length() >= 5 && line->compare(0, 5, "CWCM!", 0, 5) == 0) {
+                        Setting::modifyMutex.lock();
+                        Setting::modifyStr = std::string(*line);
+                        Setting::modifyMutex.unlock();
                     }
                     //std::cout << *line << std::endl;
                     break;

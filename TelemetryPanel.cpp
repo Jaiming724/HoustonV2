@@ -22,7 +22,9 @@ void TelemetryPanel::render() {
     if (Setting::telemetryStr.length() >= 4) {
         keys.clear();
         values.clear();
+        Setting::telemetryMutex.lock();
         std::string remainingString = Setting::telemetryStr.substr(4);
+        Setting::telemetryMutex.unlock();
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (auto &s: tokens) {
             std::vector<std::string> keyValue = Util::splitString(s, ':');
@@ -95,7 +97,7 @@ void TelemetryPanel::graphData() {
             }
         }
     }
-    if (ImPlot::BeginPlot("##Digital",ImVec2(-1,-1),ImPlotAxisFlags_AutoFit)) {
+    if (ImPlot::BeginPlot("##Digital", ImVec2(-1, -1), ImPlotAxisFlags_AutoFit)) {
         ImPlot::SetupAxisLimits(ImAxis_X1, t - 10.0, t, paused ? ImGuiCond_Once : ImGuiCond_Always);
         ImPlot::SetupAxisLimits(ImAxis_Y1, -1, 1);
 

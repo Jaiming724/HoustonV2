@@ -16,7 +16,9 @@ void AlertPanel::start() {
 
 void AlertPanel::render() {
     if (Setting::alertStr.length() >= 5) {
+        Setting::alertMutex.lock();
         std::string remainingString = Setting::alertStr.substr(5);
+        Setting::alertMutex.unlock();
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (int i = 0; i < tokens.size()-1; i++) {
             alerts.push_back(tokens.at(i));
