@@ -3,8 +3,6 @@
 //
 
 #include "ControlPanel.h"
-#include "Setting.h"
-
 
 void ControlPanel::start() {
 }

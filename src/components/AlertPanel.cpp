@@ -3,8 +3,7 @@
 //
 
 #include "AlertPanel.h"
-#include "Setting.h"
-#include "Util.h"
+
 
 AlertPanel::~AlertPanel() {
 

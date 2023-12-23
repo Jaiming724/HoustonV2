@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <asio.hpp>
+#include "pch.h"
 #include "Setting.h"
 #include "Util.h"
 

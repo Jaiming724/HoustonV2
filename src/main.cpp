@@ -1,24 +1,20 @@
 
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include <asio.hpp>
+#include "pch.h"
 #include "SerialHelper.h"
-#include "Component.h"
-#include "ControlPanel.h"
+#include "components/Component.h"
+#include "components/ControlPanel.h"
 #include "Setting.h"
-#include "TelemetryPanel.h"
-#include "implot.h"
-#include "AlertPanel.h"
-#include "LiveDataPanel.h"
+#include "components/TelemetryPanel.h"
+#include "components/AlertPanel.h"
+#include "components/LiveDataPanel.h"
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
 #endif
 
-#include <GLFW/glfw3.h> // Will drag system OpenGL headers
+#include "GLFW/glfw3.h" // Will drag system OpenGL headers
 #include <string>
 #include <iostream>
 
@@ -42,6 +38,7 @@ static void glfw_error_callback(int error, const char *description) {
 SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
 std::vector<Component *> components = std::vector<Component *>();
 bool shouldRead = true;
+
 void readSerial() {
     while (shouldRead) {
         reader.readAndPrintLines();

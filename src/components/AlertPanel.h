@@ -1,8 +1,9 @@
 #pragma once
 
-#include <vector>
+#include "../pch.h"
 #include "Component.h"
-#include <iostream>
+#include "../Setting.h"
+#include "../Util.h"
 
 class AlertPanel : public Component {
 private:

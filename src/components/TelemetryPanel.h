@@ -1,9 +1,9 @@
 #pragma once
+#include "../pch.h"
 
-#include <string>
 #include "Component.h"
-#include "Util.h"
-
+#include "../Util.h"
+#include "../Setting.h"
 
 class TelemetryPanel : public Component {
 private:

@@ -1,7 +1,7 @@
 #pragma once
-
+#include "../pch.h"
 #include "Component.h"
-#include "SerialHelper.h"
+#include "../SerialHelper.h"
 
 class ControlPanel : public Component {
 private:

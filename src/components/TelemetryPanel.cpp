@@ -1,10 +1,4 @@
-#include <vector>
-#include <iostream>
-#include <chrono>
 #include "TelemetryPanel.h"
-#include "Setting.h"
-#include "Util.h"
-#include "implot.h"
 
 void TelemetryPanel::start() {
 
