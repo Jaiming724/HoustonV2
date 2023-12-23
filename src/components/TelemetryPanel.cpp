@@ -27,17 +27,24 @@ void TelemetryPanel::render() {
                 values.push_back(keyValue[1]);
             }
         }
+        if (keySize == -1 && keys.size() > 0) {
+            keySize = keys.size();
+            data.clear();
+            for (int i = 0; i < keys.size(); i++) {
+                data.push_back(new Util::ScrollingBuffer());
+            }
+            showAnalog = new bool[keys.size()]{false};
 
-//        if (dataAnalog == nullptr || showAnalog == nullptr || keySize != keys.size()) {
-//            if (dataAnalog != nullptr) {
-//                delete[] dataAnalog;
-//                delete[] showAnalog;
-//            }
-//            dataAnalog = new Util::ScrollingBuffer[keys.size()];
-//            showAnalog = new bool[keys.size()]{false};
-//            keySize = keys.size();
-//        }
-
+        }
+        if (keySize != keys.size()) {
+            data.clear();
+            for (int i = 0; i < keys.size(); i++) {
+                data.push_back(new Util::ScrollingBuffer());
+            }
+            keySize = keys.size();
+            delete[] showAnalog;
+            showAnalog = new bool[keys.size()]{false};
+        }
     }
 
     // Create a window
@@ -53,9 +60,10 @@ void TelemetryPanel::render() {
         ImGui::Separator();
     }
     ImGui::End();
-//    ImGui::Begin("Digital Plots");
-//    graphData();
-//    ImGui::End();
+    ImGui::Begin("Digital Plots");
+    graphData();
+    //ImPlot::ShowDemoWindow();
+    ImGui::End();
 
 }
 
@@ -64,8 +72,7 @@ void TelemetryPanel::stop() {
 }
 
 TelemetryPanel::~TelemetryPanel() {
-    delete dataAnalog;
-    delete showAnalog;
+    delete[] showAnalog;
 }
 
 
@@ -78,7 +85,7 @@ void TelemetryPanel::graphData() {
             ImGui::SameLine();
         }
     }
-    if (dataAnalog == nullptr || showAnalog == nullptr) {
+    if (showAnalog == nullptr) {
         return;
     }
     static float t = 0;
@@ -87,23 +94,23 @@ void TelemetryPanel::graphData() {
         t += ImGui::GetIO().DeltaTime;
         for (int i = 0; i < keySize; i++) {
             if (showAnalog[i]) {
-                dataAnalog[i].AddPoint(t, std::stof(values[i]));
+                data[i]->AddPoint(t, std::stof(values[i]));
             }
         }
     }
+    ImPlot::SetNextAxesToFit();
+
     if (ImPlot::BeginPlot("##Digital", ImVec2(-1, -1), ImPlotAxisFlags_AutoFit)) {
-        ImPlot::SetupAxisLimits(ImAxis_X1, t - 10.0, t, paused ? ImGuiCond_Once : ImGuiCond_Always);
-        ImPlot::SetupAxisLimits(ImAxis_Y1, -1, 1);
+        ImPlot::SetupAxes(nullptr, nullptr );
+        ImPlot::SetupAxisLimits(ImAxis_X1,t - 10, t, ImGuiCond_Always);
+        ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
 
         for (int i = 0; i < keySize; ++i) {
             if (showAnalog[i]) {
-                snprintf(label, sizeof(label), "%s", keys[i].c_str());
-                if (dataAnalog[i].Data.size() > 0)
-                    ImPlot::PlotLine(label, &dataAnalog[i].Data[0].x, &dataAnalog[i].Data[0].y,
-                                     dataAnalog[i].Data.size(), 0, dataAnalog[i].Offset, 2 * sizeof(float));
+                ImPlot::PlotLine(keys[i].c_str(), &data[i]->Data[0].x, &data[i]->Data[0].y, data[i]->Data.size(), 0, data[i]->Offset, 2*sizeof(float));
+
             }
         }
-
         ImPlot::EndPlot();
     }
 }

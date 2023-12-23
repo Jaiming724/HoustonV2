@@ -10,7 +10,7 @@ private:
     std::vector<std::string> keys;
     std::vector<std::string> values;
     bool paused = false;
-    Util::ScrollingBuffer *dataAnalog = nullptr;
+    std::vector<Util::ScrollingBuffer *> data;
     bool *showAnalog = nullptr;
     int keySize = -1;
 
