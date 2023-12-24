@@ -81,10 +81,12 @@ void TelemetryPanel::graphData() {
     char label[32];
     for (int i = 0; i < keySize; i++) {
         ImGui::Checkbox(keys[i].c_str(), &showAnalog[i]);
-        if (i < keySize - 1) {
-            ImGui::SameLine();
-        }
+        ImGui::SameLine();
+
     }
+    ImGui::SliderFloat("History", &history, 1, 60, "%.1f s");
+    ImGui::SameLine();
+    ImGui::Checkbox("Auto Scale", &autoScale);
     if (showAnalog == nullptr) {
         return;
     }
@@ -98,16 +100,19 @@ void TelemetryPanel::graphData() {
             }
         }
     }
-    ImPlot::SetNextAxesToFit();
+    if (autoScale) {
+        ImPlot::SetNextAxesToFit();
+    }
 
     if (ImPlot::BeginPlot("##Digital", ImVec2(-1, -1), ImPlotAxisFlags_AutoFit)) {
-        ImPlot::SetupAxes(nullptr, nullptr );
-        ImPlot::SetupAxisLimits(ImAxis_X1,t - 10, t, ImGuiCond_Always);
-        ImPlot::SetupAxisLimits(ImAxis_Y1,0,1);
+        ImPlot::SetupAxes(nullptr, nullptr);
+        ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
+        ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
 
         for (int i = 0; i < keySize; ++i) {
             if (showAnalog[i]) {
-                ImPlot::PlotLine(keys[i].c_str(), &data[i]->Data[0].x, &data[i]->Data[0].y, data[i]->Data.size(), 0, data[i]->Offset, 2*sizeof(float));
+                ImPlot::PlotLine(keys[i].c_str(), &data[i]->Data[0].x, &data[i]->Data[0].y, data[i]->Data.size(), 0,
+                                 data[i]->Offset, 2 * sizeof(float));
 
             }
         }

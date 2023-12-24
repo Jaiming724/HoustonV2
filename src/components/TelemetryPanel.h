@@ -13,7 +13,8 @@ private:
     std::vector<Util::ScrollingBuffer *> data;
     bool *showAnalog = nullptr;
     int keySize = -1;
-
+    float history = 10.0f;
+    bool autoScale = true;
 public:
 
     TelemetryPanel(const char *name) : Component(name) {
