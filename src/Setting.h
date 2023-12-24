@@ -12,4 +12,5 @@ namespace Setting {
     inline std::mutex telemetryMutex;
     inline std::mutex alertMutex;
     inline std::mutex modifyMutex;
+    inline std::mutex isEnableMutex;
 }

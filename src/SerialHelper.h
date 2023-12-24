@@ -30,7 +30,6 @@ public:
     }
 
     virtual ~SerialHelper() {
-        std::cout << "SerialHelper::~SerialHelper()" << std::endl;
         port.close();
         delete line;
     }
@@ -56,10 +55,15 @@ public:
     }
 
     void readAndPrintLines() {
+        Setting::isEnableMutex.lock();
+
         if (!Setting::isEnable) {
+            Setting::isEnableMutex.unlock();
 
             return;
         }
+        Setting::isEnableMutex.unlock();
+
         char c;
         line->clear();
         try {

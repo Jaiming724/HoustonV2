@@ -13,14 +13,19 @@ void ControlPanel::render() {
     ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
-            Setting::isEnable = false;
             reader->close();
+            Setting::isEnableMutex.lock();
+            Setting::isEnable = false;
+            Setting::isEnableMutex.unlock();
         }
     } else {
         if (ImGui::Button("Attach")) {
-            Setting::isEnable = true;
+
             Setting::portName = inputText;
             reader->open(Setting::portName);
+            Setting::isEnableMutex.lock();
+            Setting::isEnable = true;
+            Setting::isEnableMutex.unlock();
         }
     }
     ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
