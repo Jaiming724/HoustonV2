@@ -12,7 +12,7 @@ private:
     bool paused = false;
     std::vector<Util::ScrollingBuffer *> data;
     bool *showAnalog = nullptr;
-    int keySize = -1;
+    bool initalized = false;
     float history = 10.0f;
     bool autoScale = true;
 public:

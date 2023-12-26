@@ -39,6 +39,9 @@ void AlertPanel::render() {
 }
 
 void AlertPanel::stop() {
-    Component::stop();
+    alerts.clear();
+    Setting::alertMutex.lock();
+    Setting::alertStr = std::string("");
+    Setting::alertMutex.unlock();
 }
 

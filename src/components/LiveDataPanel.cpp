@@ -61,5 +61,10 @@ void LiveDataPanel::render() {
 }
 
 void LiveDataPanel::stop() {
-    Component::stop();
+    Setting::modifyMutex.lock();
+    Setting::modifyStr = std::string("");
+    Setting::modifyMutex.unlock();
+    intMap.clear();
+    floatMap.clear();
+    boolMap.clear();
 }

@@ -47,7 +47,7 @@ void readSerial() {
 
 // Main code
 int main(int, char **) {
-    components.push_back(new ControlPanel("Control Panel", &reader));
+    components.push_back(new ControlPanel("Control Panel", &reader, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
     components.push_back(new AlertPanel("Alert Panel"));
     components.push_back(new LiveDataPanel("Live Data", &reader));

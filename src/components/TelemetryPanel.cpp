@@ -6,13 +6,6 @@ void TelemetryPanel::start() {
 
 
 void TelemetryPanel::render() {
-    //auto currentTime = std::chrono::system_clock::now();
-
-    //auto currentTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(currentTime);
-
-    // Get the actual time in milliseconds
-    //auto timeMs = currentTimeMs.time_since_epoch().count();
-    //std::cout<<timeMs<<" " <<Setting::telemetryStr<<std::endl;
     if (Setting::telemetryStr.length() >= 4) {
         keys.clear();
         values.clear();
@@ -27,24 +20,19 @@ void TelemetryPanel::render() {
                 values.push_back(keyValue[1]);
             }
         }
-        if (keySize == -1 && keys.size() > 0) {
-            keySize = keys.size();
+        if (!initalized && !keys.empty()) {
+            std::cout << "init with size" << keys.size() << std::endl;
+            initalized = true;
             data.clear();
             for (int i = 0; i < keys.size(); i++) {
                 data.push_back(new Util::ScrollingBuffer());
             }
-            showAnalog = new bool[keys.size()]{false};
+            showAnalog = new bool[keys.size()];
+            for (int i = 0; i < keys.size(); i++) {
+                showAnalog[i] = false;
+            }
+        }
 
-        }
-        if (keySize != keys.size()) {
-            data.clear();
-            for (int i = 0; i < keys.size(); i++) {
-                data.push_back(new Util::ScrollingBuffer());
-            }
-            keySize = keys.size();
-            delete[] showAnalog;
-            showAnalog = new bool[keys.size()]{false};
-        }
     }
 
     // Create a window
@@ -62,13 +50,21 @@ void TelemetryPanel::render() {
     ImGui::End();
     ImGui::Begin("Digital Plots");
     graphData();
-    //ImPlot::ShowDemoWindow();
     ImGui::End();
 
 }
 
 void TelemetryPanel::stop() {
+    if (initalized) {
+        delete[] showAnalog;
+        showAnalog = nullptr;
+    }
+    initalized = false;
 
+    Setting::telemetryMutex.lock();
+    Setting::telemetryStr = std::string("");
+    Setting::telemetryMutex.unlock();
+    data.clear();
 }
 
 TelemetryPanel::~TelemetryPanel() {
@@ -77,9 +73,10 @@ TelemetryPanel::~TelemetryPanel() {
 
 
 void TelemetryPanel::graphData() {
-
-    char label[32];
-    for (int i = 0; i < keySize; i++) {
+    if (!initalized) {
+        return;
+    }
+    for (int i = 0; i < keys.size(); i++) {
         ImGui::Checkbox(keys[i].c_str(), &showAnalog[i]);
         ImGui::SameLine();
 
@@ -87,14 +84,12 @@ void TelemetryPanel::graphData() {
     ImGui::SliderFloat("History", &history, 1, 60, "%.1f s");
     ImGui::SameLine();
     ImGui::Checkbox("Auto Scale", &autoScale);
-    if (showAnalog == nullptr) {
-        return;
-    }
+
     static float t = 0;
 
     if (!paused) {
         t += ImGui::GetIO().DeltaTime;
-        for (int i = 0; i < keySize; i++) {
+        for (int i = 0; i < data.size(); i++) {
             if (showAnalog[i]) {
                 data[i]->AddPoint(t, std::stof(values[i]));
             }
@@ -109,7 +104,7 @@ void TelemetryPanel::graphData() {
         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
 
-        for (int i = 0; i < keySize; ++i) {
+        for (int i = 0; i < data.size(); ++i) {
             if (showAnalog[i]) {
                 ImPlot::PlotLine(keys[i].c_str(), &data[i]->Data[0].x, &data[i]->Data[0].y, data[i]->Data.size(), 0,
                                  data[i]->Offset, 2 * sizeof(float));
