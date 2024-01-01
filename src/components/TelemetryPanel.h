@@ -1,18 +1,21 @@
 #pragma once
 
-#include <string>
-#include "Component.h"
-#include "Util.h"
+#include "../pch.h"
 
+#include "Component.h"
+#include "../Util.h"
+#include "../Setting.h"
 
 class TelemetryPanel : public Component {
 private:
     std::vector<std::string> keys;
     std::vector<std::string> values;
     bool paused = false;
-    Util::ScrollingBuffer *dataAnalog = nullptr;
-    bool *showAnalog = nullptr;
-    int keySize = -1;
+    bool initalized = false;
+    float history = 10.0f;
+    bool autoScale = true;
+    std::map<std::string, Util::ScrollingBuffer *> dataMap;
+    std::map<std::string, bool*> showMap;
 
 public:
 
@@ -26,5 +29,6 @@ public:
     void render() override;
 
     void stop() override;
+
     void graphData();
 };

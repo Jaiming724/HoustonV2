@@ -1,10 +1,8 @@
 
 #pragma once
-
-#include <map>
+#include "../pch.h"
 #include "Component.h"
-#include "SerialHelper.h"
-#include "Util.h"
+#include "../SerialHelper.h"
 class LiveDataPanel : public Component {
 private:
     SerialHelper *serialHelper;

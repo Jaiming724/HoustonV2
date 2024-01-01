@@ -1,8 +1,6 @@
 #pragma once
 
-#include <string>
-#include "imgui.h"
-
+#include "../pch.h"
 class Component {
 private:
     const char* name;
@@ -20,5 +18,6 @@ public:
     virtual void render() {};
 
     virtual void stop() {};
+
 
 };

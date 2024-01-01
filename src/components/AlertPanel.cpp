@@ -3,8 +3,7 @@
 //
 
 #include "AlertPanel.h"
-#include "Setting.h"
-#include "Util.h"
+
 
 AlertPanel::~AlertPanel() {
 
@@ -15,8 +14,10 @@ void AlertPanel::start() {
 }
 
 void AlertPanel::render() {
-    if (Setting::alertStr.length() >= 7) {
+    if (Setting::alertStr.length() >= 5) {
+        Setting::alertMutex.lock();
         std::string remainingString = Setting::alertStr.substr(5);
+        Setting::alertMutex.unlock();
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (int i = 0; i < tokens.size()-1; i++) {
             alerts.push_back(tokens.at(i));
@@ -38,6 +39,9 @@ void AlertPanel::render() {
 }
 
 void AlertPanel::stop() {
-    Component::stop();
+    alerts.clear();
+    Setting::alertMutex.lock();
+    Setting::alertStr = std::string("");
+    Setting::alertMutex.unlock();
 }
 

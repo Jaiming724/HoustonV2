@@ -4,20 +4,23 @@ project(HoustonV2)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(PCH_HEADER "${CMAKE_SOURCE_DIR}/src/pch.h")
 
-add_executable(HoustonV2 main.cpp
-        SerialHelper.h
-        Setting.h
-        Component.h
-        ControlPanel.cpp
-        ControlPanel.h
-        TelemetryPanel.cpp
-        TelemetryPanel.h
-        Util.h
-        AlertPanel.cpp
-        AlertPanel.h
-        LiveDataPanel.cpp
-        LiveDataPanel.h)
+add_executable(HoustonV2 src/main.cpp
+        src/SerialHelper.h
+        src/Setting.h
+        src/components/Component.h
+        src/components/ControlPanel.cpp
+        src/components/ControlPanel.h
+        src/components/TelemetryPanel.cpp
+        src/components/TelemetryPanel.h
+        src/Util.h
+        src/components/AlertPanel.cpp
+        src/components/AlertPanel.h
+        src/components/LiveDataPanel.cpp
+        src/components/LiveDataPanel.h)
+target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
+
 find_package(glad CONFIG REQUIRED)
 target_link_libraries(HoustonV2 PRIVATE glad::glad)
 find_package(asio CONFIG REQUIRED)
