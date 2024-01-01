@@ -11,12 +11,12 @@ private:
     std::vector<std::string> keys;
     std::vector<std::string> values;
     bool paused = false;
-    std::vector<Util::ScrollingBuffer *> data;
-    std::vector<bool *> showAnalog;
     bool initalized = false;
     float history = 10.0f;
     bool autoScale = true;
-    int keysize = -1;
+    std::map<std::string, Util::ScrollingBuffer *> dataMap;
+    std::map<std::string, bool*> showMap;
+
 public:
 
     TelemetryPanel(const char *name) : Component(name) {

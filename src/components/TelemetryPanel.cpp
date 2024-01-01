@@ -7,6 +7,7 @@ void TelemetryPanel::start() {
 
 void TelemetryPanel::render() {
     if (Setting::telemetryStr.length() >= 4) {
+        initalized = true;
         keys.clear();
         values.clear();
         Setting::telemetryMutex.lock();
@@ -18,18 +19,13 @@ void TelemetryPanel::render() {
             if (keyValue.size() == 2) {
                 keys.push_back(keyValue[0]);
                 values.push_back(keyValue[1]);
+                if (dataMap.count(keyValue[0]) == 0) {
+                    dataMap[keyValue[0]] = new Util::ScrollingBuffer();
+                }
+                if (showMap.count(keyValue[0]) == 0) {
+                    showMap[keyValue[0]] = new bool(false);
+                }
             }
-        }
-        if (!initalized && !keys.empty()) {
-            std::cout << "init with size" << keys.size() << std::endl;
-            initalized = true;
-            data.clear();
-            showAnalog.clear();
-            for (int i = 0; i < keys.size(); i++) {
-                data.push_back(new Util::ScrollingBuffer());
-                showAnalog.push_back(new bool(false));
-            }
-            keysize = keys.size();
         }
 
     }
@@ -60,9 +56,9 @@ void TelemetryPanel::stop() {
     Setting::telemetryMutex.lock();
     Setting::telemetryStr = std::string("");
     Setting::telemetryMutex.unlock();
-    data.clear();
-    showAnalog.clear();
-    keysize = -1;
+
+    dataMap.clear();
+    showMap.clear();
 }
 
 TelemetryPanel::~TelemetryPanel() {
@@ -70,11 +66,11 @@ TelemetryPanel::~TelemetryPanel() {
 
 
 void TelemetryPanel::graphData() {
-    if (!initalized || keysize == -1 || keys.size() != keysize) {
+    if (!initalized) {
         return;
     }
-    for (int i = 0; i <keysize; i++) {
-        ImGui::Checkbox(keys[i].c_str(), showAnalog[i]);
+    for (int i = 0; i < keys.size(); i++) {
+        ImGui::Checkbox(keys[i].c_str(), showMap[keys[i]]);
         ImGui::SameLine();
 
     }
@@ -86,9 +82,10 @@ void TelemetryPanel::graphData() {
 
     if (!paused) {
         t += ImGui::GetIO().DeltaTime;
-        for (int i = 0; i <keysize; i++) {
-            if (*showAnalog[i]) {
-                data[i]->AddPoint(t, std::stof(values[i]));
+        for (int i = 0; i < keys.size(); i++) {
+            if (*showMap[keys[i]]) {
+                dataMap[keys[i]]->AddPoint(t, std::stof(values[i]));
+                std::cout<<std::stof(values[i])<<std::endl;
             }
         }
     }
@@ -101,10 +98,11 @@ void TelemetryPanel::graphData() {
         ImPlot::SetupAxisLimits(ImAxis_X1, t - history, t, ImGuiCond_Always);
         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 1);
 
-        for (int i = 0; i < keysize; ++i) {
-            if (*showAnalog[i]) {
-                ImPlot::PlotLine(keys[i].c_str(), &data[i]->Data[0].x, &data[i]->Data[0].y, data[i]->Data.size(), 0,
-                                 data[i]->Offset, 2 * sizeof(float));
+        for (int i = 0; i < keys.size(); ++i) {
+            if (*showMap[keys[i]]) {
+                ImPlot::PlotLine(keys[i].c_str(), &dataMap[keys[i]]->Data[0].x, &dataMap[keys[i]]->Data[0].y,
+                                 dataMap[keys[i]]->Data.size(), 0,
+                                 dataMap[keys[i]]->Offset, 2 * sizeof(float));
 
             }
         }
