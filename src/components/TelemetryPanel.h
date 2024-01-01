@@ -1,4 +1,5 @@
 #pragma once
+
 #include "../pch.h"
 
 #include "Component.h"
@@ -11,10 +12,11 @@ private:
     std::vector<std::string> values;
     bool paused = false;
     std::vector<Util::ScrollingBuffer *> data;
-    bool *showAnalog = nullptr;
+    std::vector<bool *> showAnalog;
     bool initalized = false;
     float history = 10.0f;
     bool autoScale = true;
+    int keysize = -1;
 public:
 
     TelemetryPanel(const char *name) : Component(name) {
@@ -27,5 +29,6 @@ public:
     void render() override;
 
     void stop() override;
+
     void graphData();
 };
