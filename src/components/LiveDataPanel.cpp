@@ -16,23 +16,32 @@ void LiveDataPanel::start() {
 void LiveDataPanel::render() {
     //std::cout<<Setting::modifyStr<<std::endl;
     if (Setting::modifyStr.length() >= 5) {
+
         Setting::modifyMutex.lock();
         std::string remainingString = Setting::modifyStr.substr(5);
         Setting::modifyMutex.unlock();
         std::vector<std::string> tokens = Util::splitString(remainingString, ';');
         for (int i = 0; i < tokens.size() - 1; i++) {
-            if (tokens[i].at(0) == 'I' && intMap.count(tokens[i]) == 0) {
-                intMap[tokens[i]] = new int(0);
-            } else if (tokens[i].at(0) == 'F' && floatMap.count(tokens[i]) == 0) {
-                floatMap[tokens[i]] = new float(0.0f);
-            } else if (tokens[i].at(0) == 'B' && boolMap.count(tokens[i]) == 0) {
-                boolMap[tokens[i]] = new bool(false);
+            std::vector<std::string> temp = Util::splitString(tokens[i], ':');
+            if (temp.size() != 2) {
+                continue;
+            }
+            if (dataMap.count(temp[0]) == 0) {
+                dataMap[temp[0]] = temp[1];
+            }
+            if (tokens[i].at(0) == 'I' && intMap.count(temp[0]) == 0) {
+                intMap[temp[0]] = new int(0);
+            } else if (tokens[i].at(0) == 'F' && floatMap.count(temp[0]) == 0) {
+                floatMap[temp[0]] = new float(0.0f);
+            } else if (tokens[i].at(0) == 'B' && boolMap.count(temp[0]) == 0) {
+                boolMap[temp[0]] = new bool(false);
             }
         }
     }
     ImGui::Begin("Live Data");
     for (const auto &it: intMap) {
-        if (ImGui::InputInt(it.first.c_str(), it.second, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+
+        if (ImGui::InputInt(dataMap[it.first].c_str(), it.second, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
             Util::ModifyPacket modifyPacket;
             modifyPacket.int_data = *it.second;
             memcpy(modifyPacket.string_data, it.first.c_str(), 3);
@@ -40,7 +49,7 @@ void LiveDataPanel::render() {
         }
     }
     for (const auto &it: floatMap) {
-        if (ImGui::InputFloat(it.first.c_str(), it.second, 1, 100, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+        if (ImGui::InputFloat(dataMap[it.first].c_str(), it.second, 1, 100, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
             Util::ModifyPacket modifyPacket;
             modifyPacket.float_data = *it.second;
             memcpy(modifyPacket.string_data, it.first.c_str(), 3);
@@ -48,7 +57,7 @@ void LiveDataPanel::render() {
         }
     }
     for (const auto &it: boolMap) {
-        if (ImGui::Checkbox(it.first.c_str(), it.second)) {
+        if (ImGui::Checkbox(dataMap[it.first].c_str(), it.second)) {
             Util::ModifyPacket modifyPacket;
             modifyPacket.int_data = *it.second ? 1 : 0;
             memcpy(modifyPacket.string_data, it.first.c_str(), 3);

@@ -5,6 +5,7 @@
 #include "ControlPanel.h"
 
 void ControlPanel::start() {
+
 }
 
 void ControlPanel::render() {

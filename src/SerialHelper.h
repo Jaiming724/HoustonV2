@@ -35,7 +35,6 @@ public:
     }
 
     void write(Util::ModifyPacket *modifyPacket) {
-        std::cout << "write" << std::endl;
         char temp[7] = {0};
         memcpy(temp, modifyPacket->string_data, 3);
         memcpy(temp + 3, &modifyPacket->int_data, 4);

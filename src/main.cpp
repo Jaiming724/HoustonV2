@@ -85,7 +85,7 @@ int main(int, char **) {
     if (window == nullptr)
         return 1;
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0); // Enable vsync
+    glfwSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();

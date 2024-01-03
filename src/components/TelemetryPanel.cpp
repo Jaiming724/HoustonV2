@@ -85,7 +85,6 @@ void TelemetryPanel::graphData() {
         for (int i = 0; i < keys.size(); i++) {
             if (*showMap[keys[i]]) {
                 dataMap[keys[i]]->AddPoint(t, std::stof(values[i]));
-                std::cout<<std::stof(values[i])<<std::endl;
             }
         }
     }
