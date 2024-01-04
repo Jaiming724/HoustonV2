@@ -85,14 +85,14 @@ jobs:
       shell: bash
     - name: Save binary as artifact
       uses: actions/upload-artifact@v3
-      if: runner.os == "Windows"
+      if: runner.os == 'Windows'
       with:
         name: ${{ runner.os }}-binary
         path: build/Release
 
     - name: Save binary as artifact
       uses: actions/upload-artifact@v3
-      if: runner.os != "Windows"
+      if: runner.os != 'Windows'
       with:
           name: ${{ runner.os }}-binary
           path: build/HoustonV2
