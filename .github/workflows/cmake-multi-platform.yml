@@ -81,7 +81,7 @@ jobs:
         mkdir build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
-        cmake --build .
+        cmake --build . --config Release
       shell: bash
     - name: Save binary as artifact
       uses: actions/upload-artifact@v3
