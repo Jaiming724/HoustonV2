@@ -193,6 +193,9 @@ public:
                 if (temp == 13) {
                     received_packet.packet_id = temp;
                     dataState = HEADER_RECEIVED;
+                    alert("ID received");
+                } else {
+                    alert("ID failed");
                 }
             }
         } else if (dataState == HEADER_RECEIVED) {
@@ -203,10 +206,10 @@ public:
                 if (res >= 15) {
                     dataState = IDLE;
                     alert("size corruption");
-
                 } else {
                     received_packet.packet_length = res;
                     dataState = SIZE_RECEIVED;
+                    alert("size received");
                 }
             }
         } else if (dataState == SIZE_RECEIVED) {
@@ -214,7 +217,7 @@ public:
                 for (uint16_t i = 0; i < received_packet.packet_length; i++) {
                     received_packet.data_buf[i] = Serial.read();
                 }
-
+                alert("string received");
                 dataState = STRING_DATA_RECEIVED;
             }
         } else if (dataState == STRING_DATA_RECEIVED) {
@@ -288,12 +291,19 @@ public:
 
     void send() {
         processData();
-
-        Serial.println(buffer);
-        Serial.println(alertBuffer);
-        Serial.println(mapKeysBuffer);
+        //alert(mapKeysBuffer);
+        strcat(buffer, "@");
+        Serial.print(buffer);
+        strcat(alertBuffer, "@");
+        Serial.print(alertBuffer);
+        int len = strlen(mapKeysBuffer);
+        if (mapKeysBuffer[len - 1] != '@') {
+            strcat(mapKeysBuffer, "@");
+        }
+        Serial.print(mapKeysBuffer);
         memset(buffer, 0, buffer_size);
         memset(alertBuffer, 0, alertBufferSize);
+
         //memset(mapKeysBuffer, 0, mapBufferSize);
         strcat(buffer, "CWC!");
         strcat(alertBuffer, "CWCA!");

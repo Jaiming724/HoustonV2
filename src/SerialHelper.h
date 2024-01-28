@@ -10,9 +10,9 @@ class SerialHelper {
 private:
     asio::io_service io;
     asio::serial_port port;
-    //std::string *line = new std::string();
+    std::string *line = new std::string();
     long long start = -1;
-    long count = 0;
+    int count = 0;
 public:
     SerialHelper() : io(), port(io) {
     }
@@ -59,9 +59,9 @@ public:
 
         if (!Setting::isEnable) {
             Setting::isEnableMutex.unlock();
-
             return;
         }
+        Setting::isEnableMutex.unlock();
         auto currentTimePoint = std::chrono::system_clock::now();
 
         // Convert the time point to a duration since the epoch
@@ -69,41 +69,53 @@ public:
 
         // Convert the duration to milliseconds
         auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(durationSinceEpoch);
-        if(start == -1){
+        if (start == -1) {
             start = milliseconds.count();
         }
-        Setting::isEnableMutex.unlock();
-        asio::streambuf buffer;
-        std::size_t n = asio::read_until(port, buffer, '\n');
-        asio::streambuf::const_buffers_type bufs = buffer.data();
-        std::string line(asio::buffers_begin(bufs), asio::buffers_begin(bufs) + n);
 
-        if (line.length() >= 4 && line.compare(0, 4, "CWC!", 0, 4) == 0) {
-            Setting::telemetryMutex.lock();
-            Setting::telemetryStr = std::string(line);
-            Setting::telemetryMutex.unlock();
-            count += 1;
-            auto currentTimePoint = std::chrono::system_clock::now();
+        char c;
+        line->clear();
+        try {
+            while (read(port, asio::buffer(&c, 1))) {
+                if (c == '@') {
+                    if (line->length() >= 4 && line->compare(0, 4, "CWC!", 0, 4) == 0) {
+                        Setting::telemetryMutex.lock();
+                        Setting::telemetryStr = std::string(*line);
+                        Setting::telemetryMutex.unlock();
 
-            // Convert the time point to a duration since the epoch
-            auto durationSinceEpoch = currentTimePoint.time_since_epoch();
+                        count += 1;
+                        currentTimePoint = std::chrono::system_clock::now();
+                        durationSinceEpoch = currentTimePoint.time_since_epoch();
+                        milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(durationSinceEpoch);
+                        if (milliseconds.count() - start > 1000) {
+                            //std::cout << "count: " << counter << std::endl;
+                            count = 0;
+                            start = milliseconds.count();
+                        }
+                        line->clear();
+                    } else if (line->length() >= 5 && line->compare(0, 5, "CWCA!", 0, 5) == 0) {
+                        Setting::alertMutex.lock();
+                        Setting::alertStr = std::string(*line);
+                        if (line->length() > 6) {
+                            std::cout << *line;
+                            std::cout << "---------------" << std::endl;
+                        }
+                        Setting::alertMutex.unlock();
+                        line->clear();
+                    } else if (line->length() >= 5 && line->compare(0, 5, "CWCM!", 0, 5) == 0) {
+                        Setting::modifyMutex.lock();
+                        Setting::modifyStr = std::string(*line);
+                        Setting::modifyMutex.unlock();
+                        line->clear();
+                    }
+                    break;
+                } else {
+                    *(line) += c;
+                }
 
-            // Convert the duration to milliseconds
-            auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(durationSinceEpoch);
-
-            if (milliseconds.count() - start > 1000) {
-                std::cout << "count: " << count << std::endl;
-                count = 0;
-                start = milliseconds.count();
             }
-        } else if (line.length() >= 5 && line.compare(0, 5, "CWCA!", 0, 5) == 0) {
-            Setting::alertMutex.lock();
-            Setting::alertStr = std::string(line);
-            Setting::alertMutex.unlock();
-        } else if (line.length() >= 5 && line.compare(0, 5, "CWCM!", 0, 5) == 0) {
-            Setting::modifyMutex.lock();
-            Setting::modifyStr = std::string(line);
-            Setting::modifyMutex.unlock();
+        } catch (std::exception &e) {
+            std::cerr << e.what() << std::endl;
         }
     }
 };

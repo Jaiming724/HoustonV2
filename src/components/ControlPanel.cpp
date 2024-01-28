@@ -14,19 +14,19 @@ void ControlPanel::render() {
     ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
-            std::cout<<"Detach"<<std::endl;
-            reader->close();
+            std::cout << "Detach" << std::endl;
             Setting::isEnableMutex.lock();
             Setting::isEnable = false;
             Setting::isEnableMutex.unlock();
-            for(auto &component: *pVector) {
+            reader->close();
+            for (auto &component: *pVector) {
                 component->stop();
             }
         }
     } else {
         if (ImGui::Button("Attach")) {
-            std::cout<<"Attach"<<std::endl;
-            for(auto &component: *pVector) {
+            std::cout << "Attach" << std::endl;
+            for (auto &component: *pVector) {
                 component->start();
             }
             Setting::portName = inputText;
