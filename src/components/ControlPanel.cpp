@@ -26,10 +26,12 @@ void ControlPanel::render() {
     } else {
         if (ImGui::Button("Attach")) {
             std::cout << "Attach" << std::endl;
-            for (auto &component: *pVector) {
+            for (auto& component : *pVector) {
                 component->start();
             }
-            Setting::portName = inputText;
+            std::vector<std::string> portNames = ports();
+            std::cout << "using " << portNames.front() << " instead of " << inputText << std::endl;
+            Setting::portName = portNames.front();
             reader->open(Setting::portName);
             Setting::isEnableMutex.lock();
             Setting::isEnable = true;
@@ -38,6 +40,38 @@ void ControlPanel::render() {
     }
     ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
+}
+
+std::vector<std::string> ControlPanel::ports() {
+    std::vector<std::string> stringVector;
+    std::vector< tstring > ports;
+    char port[20];
+    HANDLE hSerial;
+
+    for (int i = 1; i <= 256; i++)
+    {
+        int com_check_flag = 0;
+        std::sprintf(port, "\\\\.\\com%d", i);
+
+        hSerial = CreateFile(port, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+        if (hSerial == INVALID_HANDLE_VALUE)
+        {
+            
+            com_check_flag = 1;
+
+        }
+        else {
+
+            std::string port = "COM" + std::to_string(i);
+            std::cout << "Detected port: " << port << std::endl;
+
+            stringVector.push_back(port);
+            CloseHandle(hSerial);
+
+        }
+    }
+
+    return stringVector;
 }
 
 void ControlPanel::stop() {
