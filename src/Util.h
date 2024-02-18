@@ -11,6 +11,7 @@
 
 namespace Util {
 
+#ifdef IS_WINDOWS
     inline std::string ports(std::vector<std::string> *portsList) {
         std::vector<std::string> stringVector;
         std::string listString = "";
@@ -45,6 +46,7 @@ namespace Util {
 
         return listString;
     }
+#endif
 
     inline auto splitString(std::string in, char sep) {
         std::vector<std::string> r;
