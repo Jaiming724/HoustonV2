@@ -3,7 +3,48 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+
+#include <iostream>
+#include <cstdio> // Include the header for sprintf
+
+
+
 namespace Util {
+
+    inline std::string ports(std::vector<std::string> *portsList) {
+        std::vector<std::string> stringVector;
+        std::string listString = "";
+        char port[20];
+        HANDLE hSerial;
+
+        for (int i = 1; i <= 256; i++)
+        {
+            int com_check_flag = 0;
+            std::sprintf(port, "\\\\.\\com%d", i);
+
+            hSerial = CreateFile(port, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+            if (hSerial == INVALID_HANDLE_VALUE)
+            {
+
+                com_check_flag = 1;
+
+            }
+            else {
+
+                std::string port = "COM" + std::to_string(i);
+                std::cout << "Detected port: " << port << std::endl;
+
+                listString += port + '\0';
+                stringVector.push_back(port);
+                CloseHandle(hSerial);
+
+            }
+        }
+        listString += '\0';
+        *portsList = stringVector;
+
+        return listString;
+    }
 
     inline auto splitString(std::string in, char sep) {
         std::vector<std::string> r;

@@ -33,5 +33,5 @@ public:
 
     void stop() override;
 
-    std::vector<std::string> ports();
+    //std::vector<std::string> ports();
 };
