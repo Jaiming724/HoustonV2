@@ -14,15 +14,19 @@ void AlertPanel::start() {
 }
 
 void AlertPanel::render() {
-    if (Setting::alertStr.length() >= 5) {
+    if (!Setting::alertQueue.empty()) {
+        //std::cout<<"Debug::"<<Setting::alertStr<<std::endl;
         Setting::alertMutex.lock();
-        std::string remainingString = Setting::alertStr.substr(5);
-        Setting::alertMutex.unlock();
-        std::vector<std::string> tokens = Util::splitString(remainingString, ';');
-        for (int i = 0; i < tokens.size()-1; i++) {
-            alerts.push_back(tokens.at(i));
+        while (!Setting::alertQueue.empty()) {
+            std::string currentAlert = Setting::alertQueue.front();
+            Setting::alertQueue.pop();
+            std::string remainingString = currentAlert.substr(5);
+            std::vector<std::string> tokens = Util::splitString(remainingString, ';');
+            for (int i = 0; i < tokens.size() - 1; i++) {
+                alerts.push_back(tokens.at(i));
+            }
         }
-        Setting::alertStr = "";
+        Setting::alertMutex.unlock();
     }
 
     ImGui::Begin("Alerts");
@@ -41,7 +45,9 @@ void AlertPanel::render() {
 void AlertPanel::stop() {
     alerts.clear();
     Setting::alertMutex.lock();
-    Setting::alertStr = std::string("");
+    while (!Setting::alertQueue.empty()) {
+        Setting::alertQueue.pop();
+    }
     Setting::alertMutex.unlock();
 }
 

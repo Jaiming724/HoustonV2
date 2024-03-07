@@ -11,6 +11,7 @@ private:
     asio::io_service io;
     asio::serial_port port;
     std::string *line = new std::string();
+
     long long start = -1;
     int count = 0;
 public:
@@ -93,13 +94,11 @@ public:
                             start = milliseconds.count();
                         }
                         line->clear();
-                    } else if (line->length() >= 5 && line->compare(0, 5, "CWCA!", 0, 5) == 0) {
+                    } else if (line->length() > 5 && line->compare(0, 5, "CWCA!", 0, 5) == 0) {
+                        std::cout << *line<<std::endl;
+
                         Setting::alertMutex.lock();
-                        Setting::alertStr = std::string(*line);
-                        if (line->length() > 6) {
-                            std::cout << *line;
-                            std::cout << "---------------" << std::endl;
-                        }
+                        Setting::alertQueue.push(*line);
                         Setting::alertMutex.unlock();
                         line->clear();
                     } else if (line->length() >= 5 && line->compare(0, 5, "CWCM!", 0, 5) == 0) {
