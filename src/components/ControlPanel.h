@@ -1,7 +1,18 @@
 #pragma once
 #include "../pch.h"
 #include "Component.h"
+#include <string>
+#include <iostream>
+#include <cstdio> // Include the header for sprintf
+
 #include "../SerialHelper.h"
+
+// this can be defined in a separate file
+#ifdef _UNICODE
+#define tstring std::wstring
+#else
+#define tstring std::string
+#endif   
 
 class ControlPanel : public Component {
 private:
@@ -21,4 +32,6 @@ public:
     void render() override;
 
     void stop() override;
+
+    //std::vector<std::string> ports();
 };
