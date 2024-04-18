@@ -49,10 +49,7 @@ public:
         memcpy(buf + 6, &modifyPacket->int_data, 4);
         memcpy(buf + 10, &checksum, 4);
         asio::write(port, asio::buffer(buf, 14));
-        if (memcmp(modifyPacket->string_data, "BRE", 3) == 0 && modifyPacket->int_data == 1) {
-            Setting::isEnable = false;
-            close();
-        }
+
     }
 
     void readAndPrintLines() {
@@ -89,7 +86,7 @@ public:
                         durationSinceEpoch = currentTimePoint.time_since_epoch();
                         milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(durationSinceEpoch);
                         if (milliseconds.count() - start > 1000) {
-                            //std::cout << "count: " << counter << std::endl;
+                            std::cout << "count: " << count << std::endl;
                             count = 0;
                             start = milliseconds.count();
                         }

@@ -29,14 +29,19 @@ void TelemetryPanel::render() {
                     showMap[keyValue[0]] = new bool(false);
                 }
             }
+            std::cout<<telemetryMap["PCC voltage"]<<std::endl;
         }
         if (savingFile) {
+            auto now = std::chrono::system_clock::now();
+            auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+            auto value = ms.time_since_epoch().count();
+            file << value << ",";
             for (const auto &csvHeader: csvHeaders) {
                 file << telemetryMap[csvHeader] << ",";
-                std::cout << telemetryMap[csvHeader] << ",";
+                //std::cout << telemetryMap[csvHeader] << ",";
             }
             file << std::endl;
-            std::cout << std::endl;
+            //std::cout << std::endl;
         }
 
     }

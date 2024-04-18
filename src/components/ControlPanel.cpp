@@ -12,6 +12,25 @@ void ControlPanel::render() {
     ImGui::Begin("Control Panel");
     static char inputText[256] = "COM4"; // Buffer to store input text
     ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
+    char portNumber[20];
+    if (ImGui::Button("Detect Ports")) {
+        HANDLE hSerial;
+
+        for (int i = 1; i <= 256; i++) {
+            std::sprintf(portNumber, "\\\\.\\com%d", i);
+
+            hSerial = CreateFile(portNumber, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+                                 0);
+            if (hSerial != INVALID_HANDLE_VALUE) {
+
+                std::cout << "Detected port: COM" << i << std::endl;
+            }
+            CloseHandle(hSerial);
+
+            memset(portNumber, 0, sizeof(portNumber));
+        }
+
+    }
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
             std::cout << "Detach" << std::endl;
