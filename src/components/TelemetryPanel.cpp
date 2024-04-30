@@ -6,7 +6,10 @@ void TelemetryPanel::start() {
 
 
 void TelemetryPanel::render() {
-    if (Setting::telemetryStr.length() >= 4) {
+    timer += ImGui::GetIO().DeltaTime * 1000; // Convert deltaTime to milliseconds
+
+    if (Setting::telemetryStr.length() >= 4 ) {
+        timer=0;
         initalized = true;
 //        keys.clear();
 //        values.clear();
@@ -29,8 +32,9 @@ void TelemetryPanel::render() {
                     showMap[keyValue[0]] = new bool(false);
                 }
             }
-            std::cout<<telemetryMap["PCC voltage"]<<std::endl;
+            std::cout<<telemetryMap["generator voltage"]<<std::endl;
         }
+
         if (savingFile) {
             auto now = std::chrono::system_clock::now();
             auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
@@ -92,9 +96,9 @@ void TelemetryPanel::render() {
 
 
     ImGui::End();
-    ImGui::Begin("Digital Plots");
-    graphData();
-    ImGui::End();
+//    ImGui::Begin("Digital Plots");
+//    graphData();
+//    ImGui::End();
 
 }
 

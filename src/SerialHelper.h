@@ -86,13 +86,13 @@ public:
                         durationSinceEpoch = currentTimePoint.time_since_epoch();
                         milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(durationSinceEpoch);
                         if (milliseconds.count() - start > 1000) {
-                            std::cout << "count: " << count << std::endl;
+                            //std::cout << "count: " << count << std::endl;
                             count = 0;
                             start = milliseconds.count();
                         }
                         line->clear();
                     } else if (line->length() > 5 && line->compare(0, 5, "CWCA!", 0, 5) == 0) {
-                        std::cout << *line<<std::endl;
+                        //std::cout << *line<<std::endl;
 
                         Setting::alertMutex.lock();
                         Setting::alertQueue.push(*line);

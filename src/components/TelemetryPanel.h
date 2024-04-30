@@ -23,6 +23,8 @@ private:
     std::vector<std::string> csvHeaders;
     std::ofstream file;
 
+    int timer = 0;
+
 public:
 
     TelemetryPanel(const char *name) : Component(name) {
