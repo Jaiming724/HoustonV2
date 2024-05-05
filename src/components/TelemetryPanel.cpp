@@ -8,11 +8,10 @@ void TelemetryPanel::start() {
 void TelemetryPanel::render() {
     timer += ImGui::GetIO().DeltaTime * 1000; // Convert deltaTime to milliseconds
 
-    if (Setting::telemetryStr.length() >= 4 ) {
-        timer=0;
+    if (Setting::telemetryStr.length() >= 4) {
+        timer = 0;
         initalized = true;
-//        keys.clear();
-//        values.clear();
+
         telemetryMap.clear();
         Setting::telemetryMutex.lock();
         std::string remainingString = Setting::telemetryStr.substr(4);
@@ -21,9 +20,6 @@ void TelemetryPanel::render() {
         for (auto &s: tokens) {
             std::vector<std::string> keyValue = Util::splitString(s, ':');
             if (keyValue.size() == 2) {
-
-//                keys.push_back(keyValue[0]);
-//                values.push_back(keyValue[1]);
                 telemetryMap[keyValue[0]] = keyValue[1];
                 if (dataMap.count(keyValue[0]) == 0) {
                     dataMap[keyValue[0]] = new Util::ScrollingBuffer();
@@ -32,7 +28,6 @@ void TelemetryPanel::render() {
                     showMap[keyValue[0]] = new bool(false);
                 }
             }
-            std::cout<<telemetryMap["generator voltage"]<<std::endl;
         }
 
         if (savingFile) {
@@ -40,8 +35,13 @@ void TelemetryPanel::render() {
             auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
             auto value = ms.time_since_epoch().count();
             file << value << ",";
-            for (const auto &csvHeader: csvHeaders) {
-                file << telemetryMap[csvHeader] << ",";
+            for (int i = 1; i < csvHeaders.size(); i++) {
+                if (telemetryMap.count(csvHeaders[i]) > 0) {
+                    file << telemetryMap[csvHeaders[i]] << ",";
+                } else {
+                    file << "-1,";
+                    continue;
+                }
                 //std::cout << telemetryMap[csvHeader] << ",";
             }
             file << std::endl;
@@ -61,13 +61,6 @@ void TelemetryPanel::render() {
         ImGui::NextColumn();
         ImGui::Separator();
     }
-//    for (int i = 0; i < keys.size(); i++) {
-//        ImGui::Text("%s", keys[i].c_str());
-//        ImGui::NextColumn();
-//        ImGui::Text("%s", values[i].c_str());
-//        ImGui::NextColumn();
-//        ImGui::Separator();
-//    }
 
     ImGui::InputText("File", csvFileBuffer, IM_ARRAYSIZE(csvFileBuffer));
     if (savingFile) {
@@ -83,7 +76,8 @@ void TelemetryPanel::render() {
                 std::cerr << "Error: Unable to open file " << std::endl;
                 return;
             }
-
+            csvHeaders.push_back("Time");
+            file << "Time,";
             for (auto it = dataMap.begin(); it != dataMap.end(); ++it) {
                 csvHeaders.push_back(it->first);
                 file << it->first << ",";
@@ -94,11 +88,10 @@ void TelemetryPanel::render() {
         }
     }
 
-
     ImGui::End();
-    ImGui::Begin("Digital Plots");
-    graphData();
-    ImGui::End();
+//    ImGui::Begin("Digital Plots");
+//    graphData();
+//    ImGui::End();
 
 }
 
@@ -118,8 +111,7 @@ void TelemetryPanel::stop() {
     file.close();
 }
 
-TelemetryPanel::~TelemetryPanel() {
-}
+TelemetryPanel::~TelemetryPanel() = default;
 
 
 void TelemetryPanel::graphData() {
@@ -130,13 +122,10 @@ void TelemetryPanel::graphData() {
         ImGui::Checkbox(pair.first.c_str(), showMap[pair.first]);
         ImGui::SameLine();
     }
-//    for (int i = 0; i < keys.size(); i++) {
-//        ImGui::Checkbox(keys[i].c_str(), showMap[keys[i]]);
-//        ImGui::SameLine();
-//    }
-    ImGui::SliderFloat("History", &history, 1, 60, "%.1f s");
-    ImGui::SameLine();
     ImGui::Checkbox("Auto Scale", &autoScale);
+    ImGui::SameLine();
+    ImGui::SliderFloat("History", &history, 1, 60, "%.1f s");
+
 
     static float t = 0;
 
@@ -147,11 +136,6 @@ void TelemetryPanel::graphData() {
                 dataMap[pair.first]->AddPoint(t, std::stof(pair.second));
             }
         }
-//        for (int i = 0; i < keys.size(); i++) {
-//            if (*showMap[keys[i]]) {
-//                dataMap[keys[i]]->AddPoint(t, std::stof(values[i]));
-//            }
-//        }
     }
     if (autoScale) {
         ImPlot::SetNextAxesToFit();
@@ -168,14 +152,6 @@ void TelemetryPanel::graphData() {
                                  dataMap[pair.first]->Offset, 2 * sizeof(float));
             }
         }
-//        for (int i = 0; i < keys.size(); ++i) {
-//            if (*showMap[keys[i]]) {
-//                ImPlot::PlotLine(keys[i].c_str(), &dataMap[keys[i]]->Data[0].x, &dataMap[keys[i]]->Data[0].y,
-//                                 dataMap[keys[i]]->Data.size(), 0,
-//                                 dataMap[keys[i]]->Offset, 2 * sizeof(float));
-//
-//            }
-//        }
         ImPlot::EndPlot();
     }
 }
