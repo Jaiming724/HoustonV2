@@ -14,9 +14,9 @@
 #include <GLES2/gl2.h>
 #endif
 
+
 #include "GLFW/glfw3.h" // Will drag system OpenGL headers
-#include <string>
-#include <iostream>
+
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -31,6 +31,7 @@
 #endif
 
 static void glfw_error_callback(int error, const char *description) {
+
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
@@ -45,8 +46,62 @@ void readSerial() {
     }
 }
 
+struct UserData {
+};
+
 // Main code
 int main(int, char **) {
+
+    try {
+        // Create an I/O context
+        boost::asio::io_context ioc;
+
+        // Create a resolver for DNS lookup
+        boost::asio::ip::tcp::resolver resolver(ioc);
+        auto const results = resolver.resolve("192.168.4.1", "8080");
+
+        // Create a WebSocket stream
+        boost::beast::websocket::stream<boost::asio::ip::tcp::socket> ws(ioc);
+
+        // Connect the WebSocket stream to the resolved address
+        boost::asio::connect(ws.next_layer(), results.begin(), results.end());
+
+        // Perform the WebSocket handshake
+        ws.handshake("192.168.4.1", "/ws");
+        std::cout << "Connected to WebSocket server." << std::endl;
+
+        // Start a separate thread to continuously receive messages
+        std::thread receiver_thread([&ws]() {
+            try {
+                for (;;) {
+                    boost::beast::flat_buffer buffer;
+
+                    // Read a message from the WebSocket server
+                    ws.read(buffer);
+
+                    // Print the received message
+                    std::cout << "Received: " << boost::beast::buffers_to_string(buffer.data()) << std::endl;
+                }
+            } catch (const boost::beast::system_error& se) {
+                if (se.code() != boost::beast::websocket::error::closed) {
+                    std::cerr << "WebSocket read error: " << se.what() << std::endl;
+                }
+            }
+        });
+
+        // Wait for user input to terminate the program
+        std::cout << "Press Enter to disconnect..." << std::endl;
+        std::cin.get();
+
+        // Close the WebSocket connection
+        ws.close(boost::beast::websocket::close_code::normal);
+        receiver_thread.join();
+        std::cout << "WebSocket connection closed." << std::endl;
+
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+    }
+
     components.push_back(new ControlPanel("Control Panel", &reader, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
     components.push_back(new AlertPanel("Alert Panel"));
@@ -218,6 +273,8 @@ int main(int, char **) {
         }
         //end docking
         ImGui::End();
+
+        const std::string uri = "ws://192.168.4.1:8080/ws";
 
 
         // Rendering

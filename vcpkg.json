@@ -2,14 +2,18 @@
   "name": "houstonv2",
   "version": "0.0.1",
   "dependencies": [
-    "glfw3",
-    "glad",
     "asio",
-    "implot",
+    "glad",
+    "glfw3",
     {
       "name": "imgui",
-      "features": [ "glfw-binding", "opengl3-binding","docking-experimental"]
-    }
-
+      "features": [
+        "docking-experimental",
+        "glfw-binding",
+        "opengl3-binding"
+      ]
+    },
+    "implot",
+    "boost-beast"
   ]
 }

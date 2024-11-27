@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(HoustonV2)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(PCH_HEADER "${CMAKE_SOURCE_DIR}/src/pch.h")
@@ -18,7 +18,8 @@ add_executable(HoustonV2 src/main.cpp
         src/components/AlertPanel.cpp
         src/components/AlertPanel.h
         src/components/LiveDataPanel.cpp
-        src/components/LiveDataPanel.h)
+        src/components/LiveDataPanel.h
+)
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 
 find_package(glad CONFIG REQUIRED)
@@ -33,5 +34,13 @@ target_link_libraries(HoustonV2 PRIVATE imgui::imgui)
 find_package(implot CONFIG REQUIRED)
 target_link_libraries(HoustonV2 PRIVATE implot::implot)
 find_package(OpenGL REQUIRED)
-#target_link_libraries(HoustonV2 PRIVATE opengl32.lib)
+
+
+find_package(Boost REQUIRED COMPONENTS system)
+
+
+
+target_link_libraries(HoustonV2 PRIVATE Boost::boost Boost::system)
+target_include_directories(HoustonV2 PRIVATE ${Boost_INCLUDE_DIRS})
+
 target_link_libraries(HoustonV2 PRIVATE ${OPENGL_LIBRARIES})
