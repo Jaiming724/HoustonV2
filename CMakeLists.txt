@@ -19,6 +19,10 @@ add_executable(HoustonV2 src/main.cpp
         src/components/AlertPanel.h
         src/components/LiveDataPanel.cpp
         src/components/LiveDataPanel.h
+        src/services/DataProducer.h
+        src/services/DataProducer.h
+        src/services/WebSocketProducer.cpp
+        src/services/WebSocketProducer.h
 )
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 

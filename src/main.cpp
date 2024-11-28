@@ -8,6 +8,7 @@
 #include "components/TelemetryPanel.h"
 #include "components/AlertPanel.h"
 #include "components/LiveDataPanel.h"
+#include "services/WebSocketProducer.h"
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -52,60 +53,67 @@ struct UserData {
 // Main code
 int main(int, char **) {
 
-    try {
-        // Create an I/O context
-        boost::asio::io_context ioc;
+    //try {
+    // Create an I/O context
+    //boost::asio::io_context ioc;
 
-        // Create a resolver for DNS lookup
-        boost::asio::ip::tcp::resolver resolver(ioc);
-        auto const results = resolver.resolve("192.168.4.1", "8080");
+    // Create a resolver for DNS lookup
+    //boost::asio::ip::tcp::resolver resolver(ioc);
+    //auto const results = resolver.resolve("192.168.4.1", "8080");
 
-        // Create a WebSocket stream
-        boost::beast::websocket::stream<boost::asio::ip::tcp::socket> ws(ioc);
+    // Create a WebSocket stream
+    //boost::beast::websocket::stream<boost::asio::ip::tcp::socket> ws(ioc);
 
-        // Connect the WebSocket stream to the resolved address
-        boost::asio::connect(ws.next_layer(), results.begin(), results.end());
+    // Connect the WebSocket stream to the resolved address
+    //boost::asio::connect(ws.next_layer(), results.begin(), results.end());
 
-        // Perform the WebSocket handshake
-        ws.handshake("192.168.4.1", "/ws");
-        std::cout << "Connected to WebSocket server." << std::endl;
+    // Perform the WebSocket handshake
+//        ws.handshake("192.168.4.1", "/ws");
+//        std::cout << "Connected to WebSocket server." << std::endl;
 
-        // Start a separate thread to continuously receive messages
-        std::thread receiver_thread([&ws]() {
-            try {
-                for (;;) {
-                    boost::beast::flat_buffer buffer;
-
-                    // Read a message from the WebSocket server
-                    ws.read(buffer);
-
-                    // Print the received message
-                    std::cout << "Received: " << boost::beast::buffers_to_string(buffer.data()) << std::endl;
-                }
-            } catch (const boost::beast::system_error& se) {
-                if (se.code() != boost::beast::websocket::error::closed) {
-                    std::cerr << "WebSocket read error: " << se.what() << std::endl;
-                }
-            }
-        });
-
-        // Wait for user input to terminate the program
-        std::cout << "Press Enter to disconnect..." << std::endl;
-        std::cin.get();
-
-        // Close the WebSocket connection
-        ws.close(boost::beast::websocket::close_code::normal);
-        receiver_thread.join();
-        std::cout << "WebSocket connection closed." << std::endl;
-
-    } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
-    }
+    // Start a separate thread to continuously receive messages
+//        std::thread receiver_thread([&ws]() {
+//            try {
+//                for (;;) {
+//                    boost::beast::flat_buffer buffer;
+//
+//                    // Read a message from the WebSocket server
+//                    ws.read(buffer);
+//
+//                    // Print the received message
+//                    std::cout<<"Received Data"<<std::endl;
+//                    auto data = boost::asio::buffer_cast<uint8_t*>(buffer.data());
+//                    for(int i=0;i<buffer.size();i++){
+//                        std::cout<<std::hex<<(int)data[i]<<" ";
+//                    }
+//                    std::cout<<std::endl;
+//                }
+//            } catch (const boost::beast::system_error& se) {
+//                if (se.code() != boost::beast::websocket::error::closed) {
+//                    std::cerr << "WebSocket read error: " << se.what() << std::endl;
+//                }
+//            }
+//        });
+//
+//        // Wait for user input to terminate the program
+//        std::cout << "Press Enter to disconnect..." << std::endl;
+//        std::cin.get();
+//
+//        // Close the WebSocket connection
+//        ws.close(boost::beast::websocket::close_code::normal);
+//        receiver_thread.join();
+//        std::cout << "WebSocket connection closed." << std::endl;
+//
+//    } catch (const std::exception& e) {
+//        std::cerr << "Exception: " << e.what() << std::endl;
+//    }
 
     components.push_back(new ControlPanel("Control Panel", &reader, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
     components.push_back(new AlertPanel("Alert Panel"));
     components.push_back(new LiveDataPanel("Live Data", &reader));
+    WebSocketProducer producer("WebSocket Producer", "192.168.4.1", "8080");
+    producer.start();
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
@@ -271,6 +279,8 @@ int main(int, char **) {
         for (auto component: components) {
             component->render();
         }
+        producer.fetch();
+
         //end docking
         ImGui::End();
 
