@@ -50,6 +50,14 @@ void readSerial() {
 struct UserData {
 };
 
+void logData(const std::vector<uint8_t> &data) {
+    std::cout << "Received Data: ";
+    for (uint8_t byte: data) {
+        std::cout << std::hex << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+}
+
 // Main code
 int main(int, char **) {
 
@@ -113,6 +121,7 @@ int main(int, char **) {
     components.push_back(new AlertPanel("Alert Panel"));
     components.push_back(new LiveDataPanel("Live Data", &reader));
     WebSocketProducer producer("WebSocket Producer", "192.168.4.1", "8080");
+    producer.setReadCallback(logData);
     producer.start();
 
     glfwSetErrorCallback(glfw_error_callback);

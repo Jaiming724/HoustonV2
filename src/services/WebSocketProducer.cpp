@@ -10,6 +10,7 @@ void WebSocketProducer::init() {
 
 void WebSocketProducer::start() {
     try {
+        this->status = true;
         auto const results = resolver.resolve(host, port);
         for (const auto &endpoint: results) {
             std::cout << "IP: " << endpoint.endpoint().address()
@@ -19,15 +20,37 @@ void WebSocketProducer::start() {
         ws.handshake(host, "/ws");
         std::cout << "Connected to WebSocket server." << std::endl;
         asyncRead();
+        std::vector<uint8_t> binaryData = {0xAA, 0xBB, 0xCC, 0xDD, 0xAA, 0xBB};
+        if (this->status) {
+            asyncWrite(binaryData);
+        }
+
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
+
 }
 
 void WebSocketProducer::fetch() {
 
     ioc.poll();
 }
+
+void WebSocketProducer::asyncWrite(const std::vector<uint8_t> &data) {
+    auto buf = boost::asio::buffer(data);
+    ws.async_write(
+            buf,
+            [this](boost::system::error_code ec, std::size_t bytes_transferred) {
+                if (ec) {
+                    std::cerr << "WebSocket write error: " << ec.message() << std::endl;
+                    return;
+                }
+
+                std::cout << "Successfully sent " << bytes_transferred << " bytes." << std::endl;
+            });
+
+}
+
 void WebSocketProducer::asyncRead() {
     ws.async_read(
             buffer,
@@ -41,23 +64,18 @@ void WebSocketProducer::asyncRead() {
                     return;
                 }
 
-                // Process the received message
-                std::cout << "Received Data:" << std::endl;
-                auto data = boost::asio::buffer_cast<const uint8_t*>(buffer.data());
-                for (std::size_t i = 0; i < bytes_transferred; ++i) {
-                    std::cout << std::hex << static_cast<int>(data[i]) << " ";
-                }
-                std::cout << std::endl;
-
-                // Clear the buffer for the next read
+                auto data = boost::asio::buffer_cast<const uint8_t *>(buffer.data());
+                std::vector<uint8_t> receivedData(data, data + bytes_transferred);
+                readCallback_(receivedData);
                 buffer.consume(bytes_transferred);
-
-                // Schedule another asynchronous read
-                asyncRead();
+                if (this->status) {
+                    asyncRead();
+                }
             });
 }
 
 void WebSocketProducer::stop() {
+    this->status = false;
     try {
         if (ws.is_open()) {
             ws.close(boost::beast::websocket::close_code::normal);

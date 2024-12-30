@@ -3,9 +3,10 @@
 #include "../pch.h"
 
 class DataProducer {
-private:
-    const char *name;
+
 public:
+    const char *name;
+    bool status = false;
     DataProducer(const char *name) {
         this->name = name;
     }

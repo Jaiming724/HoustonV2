@@ -12,6 +12,7 @@ private:
     boost::asio::ip::tcp::resolver resolver;
     boost::beast::websocket::stream<boost::asio::ip::tcp::socket> ws;
     boost::beast::flat_buffer buffer;
+    std::function<void(const std::vector<uint8_t>&)> readCallback_;
 
 public:
     WebSocketProducer(const char *name, const char *host, const char* port)
@@ -28,5 +29,11 @@ public:
 
     void stop() override;
 
+    void asyncWrite(const std::vector<uint8_t>& data);
+
     void asyncRead();
+    void setReadCallback(std::function<void(const std::vector<uint8_t>&)> callback) {
+        readCallback_ = std::move(callback);
+    }
+
 };
