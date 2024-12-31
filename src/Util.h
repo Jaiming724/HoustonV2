@@ -3,7 +3,39 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
+
 namespace Util {
+    inline std::string parseFileName(const std::string& filePath) {
+        // Find the last backslash or forward slash
+        size_t lastSlash = filePath.find_last_of("\\/");
+
+        // Extract and return the file name
+        return (lastSlash == std::string::npos) ? filePath : filePath.substr(lastSlash + 1);
+    }
+
+    inline std::unordered_map<std::string, std::string> parseKeyValuePairs(const std::string &input) {
+        std::unordered_map<std::string, std::string> result;
+        std::istringstream stream(input);
+        std::string pair;
+
+        // Split by ';' to get key-value pairs
+        while (std::getline(stream, pair, ';')) {
+            if (!pair.empty()) {
+                size_t delimiterPos = pair.find(':');
+                if (delimiterPos != std::string::npos) {
+                    // Extract key and value
+                    std::string key = pair.substr(0, delimiterPos);
+                    std::string value = pair.substr(delimiterPos + 1);
+
+                    // Insert into the map
+                    result[key] = value;
+                }
+            }
+        }
+
+        return result;
+    }
 
     inline auto splitString(std::string in, char sep) {
         std::vector<std::string> r;

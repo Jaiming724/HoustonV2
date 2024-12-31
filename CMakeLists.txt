@@ -23,6 +23,9 @@ add_executable(HoustonV2 src/main.cpp
         src/services/DataProducer.h
         src/services/WebSocketProducer.cpp
         src/services/WebSocketProducer.h
+        src/components/FileUpload.cpp
+        src/components/FileUpload.h
+        external/httplib.h
 )
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 
@@ -46,5 +49,6 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 target_link_libraries(HoustonV2 PRIVATE Boost::boost Boost::system)
 target_include_directories(HoustonV2 PRIVATE ${Boost_INCLUDE_DIRS})
-
+add_subdirectory(external/nativefiledialog-extended)
+target_link_libraries(HoustonV2 PRIVATE nfd)
 target_link_libraries(HoustonV2 PRIVATE ${OPENGL_LIBRARIES})

@@ -20,4 +20,6 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <string>
+#include "../external/nativefiledialog-extended/src/include/nfd.hpp"
+#include "../external/httplib.h"
 #endif //HOUSTONV2_PCH_H
