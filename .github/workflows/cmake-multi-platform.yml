@@ -54,10 +54,10 @@ jobs:
     - name: Cache vcpkg
       uses: actions/cache@v3
       with:
-          path: ${{ env.VCPKG_CACHE }}
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json', '**/CMakeLists.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-
+        path: ${{ runner.workspace }}/vcpkg_cache
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json', '**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
