@@ -46,7 +46,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-
+      with:
+          submodules: recursive  # Ensure submodules are initialized and updated    
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
@@ -58,11 +59,21 @@ jobs:
         if [ "${RUNNER_OS}" == "Linux" ]; then
           echo "Running on Linux! Installing zip..."
           sudo apt-get update
-          sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
+          sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config libgtk-3-dev
         else
           echo "Not running on Linux."
         fi
       shell: bash
+    - name: Cache vcpkg
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./vcpkg/packages
+          ./vcpkg/downloads
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-
+          
     - name: Install vcpkg
       run: |
         git clone https://github.com/microsoft/vcpkg.git

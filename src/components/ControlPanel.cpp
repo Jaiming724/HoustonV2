@@ -13,6 +13,8 @@ void ControlPanel::render() {
     static char inputText[256] = "COM4"; // Buffer to store input text
     ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
     char portNumber[20];
+#ifdef IS_WINDOWS
+
     if (ImGui::Button("Detect Ports")) {
         HANDLE hSerial;
 
@@ -31,6 +33,8 @@ void ControlPanel::render() {
         }
 
     }
+#endif
+
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
             std::cout << "Detach" << std::endl;
