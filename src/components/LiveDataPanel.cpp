@@ -1,8 +1,8 @@
 
 #include "LiveDataPanel.h"
 
-LiveDataPanel::LiveDataPanel(const char *name, SerialHelper *serialHelper) : Component(name) {
-    this->serialHelper = serialHelper;
+LiveDataPanel::LiveDataPanel(const char *name, WebSocketProducer *webSocketProducer) : Component(name) {
+    this->webSocketProducer = webSocketProducer;
 }
 
 LiveDataPanel::~LiveDataPanel() {
@@ -39,32 +39,41 @@ void LiveDataPanel::render() {
         }
     }
     ImGui::Begin("Live Data");
-    for (const auto &it: intMap) {
+    if (ImGui::Button("Test")) {
+        Util::ModifyPacket temp;
+        temp.int_data = 0x1234;
+        memset(temp.string_data, 0, 3);
+        memcpy(temp.string_data, "BAB",3);
+        webSocketProducer->asyncWrite(Util::modifyPacketToVec(&temp));
+    }
 
-        if (ImGui::InputInt(dataMap[it.first].c_str(), it.second, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
-            Util::ModifyPacket modifyPacket;
-            modifyPacket.int_data = *it.second;
-            memcpy(modifyPacket.string_data, it.first.c_str(), 3);
-            serialHelper->write(&modifyPacket);
-        }
-    }
-    for (const auto &it: floatMap) {
-        if (ImGui::InputFloat(dataMap[it.first].c_str(), it.second, 1, 100, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-            Util::ModifyPacket modifyPacket;
-            modifyPacket.float_data = *it.second;
-            memcpy(modifyPacket.string_data, it.first.c_str(), 3);
-            serialHelper->write(&modifyPacket);
-        }
-    }
-    for (const auto &it: boolMap) {
-        if (ImGui::Checkbox(dataMap[it.first].c_str(), it.second)) {
-            Util::ModifyPacket modifyPacket;
-            modifyPacket.int_data = *it.second ? 1 : 0;
-            memcpy(modifyPacket.string_data, it.first.c_str(), 3);
-
-            serialHelper->write(&modifyPacket);
-        }
-    }
+//    for (const auto &it: intMap) {
+//
+//        if (ImGui::InputInt(dataMap[it.first].c_str(), it.second, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+//            Util::ModifyPacket modifyPacket;
+//            modifyPacket.int_data = *it.second;
+//            memcpy(modifyPacket.string_data, it.first.c_str(), 3);
+//            serialHelper->write(&modifyPacket);
+//        }
+//    }
+//    for (const auto &it: floatMap) {
+//        if (ImGui::InputFloat(dataMap[it.first].c_str(), it.second, 1, 100, "%.3f",
+//                              ImGuiInputTextFlags_EnterReturnsTrue)) {
+//            Util::ModifyPacket modifyPacket;
+//            modifyPacket.float_data = *it.second;
+//            memcpy(modifyPacket.string_data, it.first.c_str(), 3);
+//            serialHelper->write(&modifyPacket);
+//        }
+//    }
+//    for (const auto &it: boolMap) {
+//        if (ImGui::Checkbox(dataMap[it.first].c_str(), it.second)) {
+//            Util::ModifyPacket modifyPacket;
+//            modifyPacket.int_data = *it.second ? 1 : 0;
+//            memcpy(modifyPacket.string_data, it.first.c_str(), 3);
+//
+//            serialHelper->write(&modifyPacket);
+//        }
+//    }
 
     ImGui::End();
 }

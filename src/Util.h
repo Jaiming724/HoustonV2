@@ -6,7 +6,8 @@
 #include <unordered_map>
 
 namespace Util {
-    inline std::string parseFileName(const std::string& filePath) {
+
+    inline std::string parseFileName(const std::string &filePath) {
         // Find the last backslash or forward slash
         size_t lastSlash = filePath.find_last_of("\\/");
 
@@ -60,7 +61,7 @@ namespace Util {
     }
 
     struct ModifyPacket {
-        uint8_t packet_id = 13;
+        uint8_t packet_id = 0xd1;
         uint16_t packet_length = 0x3;
         char string_data[3] = {0};
         union {
@@ -85,6 +86,27 @@ namespace Util {
         }
 
         return ~crc;
+    }
+
+    inline std::vector<uint8_t> modifyPacketToVec(const ModifyPacket *modifyPacket) {
+        std::vector<uint8_t> vec;
+        char temp[7] = {0};
+        memcpy(temp, modifyPacket->string_data, 3);
+        memcpy(temp + 3, &modifyPacket->int_data, 4);
+        uint32_t checksum = Util::crc32(temp, 7);
+        vec.push_back(modifyPacket->packet_id);
+        vec.push_back((modifyPacket->packet_length >> 8) & 0xFF);
+        vec.push_back(modifyPacket->packet_length & 0xFF);
+        for (int i = 0; i < 3; i++) {
+            vec.push_back(modifyPacket->string_data[i]);
+        }
+        for (int i = 0; i < 4; i++) {
+            vec.push_back((modifyPacket->int_data >> (i * 8)) & 0xFF);
+        }
+        for (int i = 0; i < 4; i++) {
+            vec.push_back((checksum >> (i * 8)) & 0xFF);
+        }
+        return vec;
     }
 
     struct ScrollingBuffer {

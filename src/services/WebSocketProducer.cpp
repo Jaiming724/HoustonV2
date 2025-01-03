@@ -21,9 +21,6 @@ void WebSocketProducer::start() {
         std::cout << "Connected to WebSocket server." << std::endl;
         asyncRead();
         std::vector<uint8_t> binaryData = {0xAA, 0xBB, 0xCC, 0xDD, 0xAA, 0xBB};
-        if (this->status) {
-            asyncWrite(binaryData);
-        }
 
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;

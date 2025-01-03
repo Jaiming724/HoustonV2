@@ -118,15 +118,15 @@ int main(int, char **) {
 //        std::cerr << "Exception: " << e.what() << std::endl;
 //    }
 
+    WebSocketProducer producer("WebSocket Producer", "192.168.4.1", "8080");
 
     components.push_back(new ControlPanel("Control Panel", &reader, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
     components.push_back(new AlertPanel("Alert Panel"));
-    components.push_back(new LiveDataPanel("Live Data", &reader));
+    components.push_back(new LiveDataPanel("Live Data", &producer));
     components.push_back(new FileUpload("File Upload"));
-    WebSocketProducer producer("WebSocket Producer", "192.168.4.1", "8080");
-//    producer.setReadCallback(logData);
-//    producer.start();
+    producer.setReadCallback(logData);
+    producer.start();
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
