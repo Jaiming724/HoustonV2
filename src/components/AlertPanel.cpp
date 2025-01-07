@@ -3,6 +3,7 @@
 //
 
 #include "AlertPanel.h"
+#include "../services/consumer/QueueData.h"
 
 
 AlertPanel::~AlertPanel() {
@@ -14,21 +15,11 @@ void AlertPanel::start() {
 }
 
 void AlertPanel::render() {
-    if (!Setting::alertQueue.empty()) {
-        //std::cout<<"Debug::"<<Setting::alertStr<<std::endl;
-        Setting::alertMutex.lock();
-        while (!Setting::alertQueue.empty()) {
-            std::string currentAlert = Setting::alertQueue.front();
-            Setting::alertQueue.pop();
-            std::string remainingString = currentAlert.substr(5);
-            std::vector<std::string> tokens = Util::splitString(remainingString, ';');
-            for (int i = 0; i < tokens.size() - 1; i++) {
-                alerts.push_back(tokens.at(i));
-            }
-        }
-        Setting::alertMutex.unlock();
+    QueueData *queueData = (QueueData *) dispatcher->getHandler(std::string("AlertConsumer")).get();
+    while (!queueData->queue.empty()) {
+        alerts.push_back(queueData->queue.front());
+        queueData->queue.pop();
     }
-
     ImGui::Begin("Alerts");
     for (auto &s: alerts) {
         ImGui::Text("%s", s.c_str());

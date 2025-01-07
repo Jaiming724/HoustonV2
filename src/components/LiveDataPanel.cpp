@@ -1,9 +1,7 @@
 
 #include "LiveDataPanel.h"
 
-LiveDataPanel::LiveDataPanel(const char *name, WebSocketProducer *webSocketProducer) : Component(name) {
-    this->webSocketProducer = webSocketProducer;
-}
+
 
 LiveDataPanel::~LiveDataPanel() {
 
@@ -39,11 +37,11 @@ void LiveDataPanel::render() {
         }
     }
     ImGui::Begin("Live Data");
-    if (ImGui::Button("Test")) {
+    if (ImGui::Checkbox("Toggle LED", &test)) {
         Util::ModifyPacket temp;
-        temp.int_data = 0x1234;
+        temp.int_data = 0x0;
         memset(temp.string_data, 0, 3);
-        memcpy(temp.string_data, "BAB",3);
+        memcpy(temp.string_data, "BAB", 3);
         webSocketProducer->asyncWrite(Util::modifyPacketToVec(&temp));
     }
 

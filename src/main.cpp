@@ -19,6 +19,7 @@
 
 
 #include "GLFW/glfw3.h" // Will drag system OpenGL headers
+#include "services/consumer/QueueData.h"
 
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
@@ -118,12 +119,14 @@ int main(int, char **) {
 //        std::cerr << "Exception: " << e.what() << std::endl;
 //    }
 
-    WebSocketProducer producer("WebSocket Producer", "192.168.4.1", "8080");
+    Dispatcher dispatcher;
+    WebSocketProducer producer("WebSocket Producer", &dispatcher, "192.168.4.1", "8080");
 
+    dispatcher.registerHandler(std::string("AlertConsumer"), std::make_shared<QueueData>());
     components.push_back(new ControlPanel("Control Panel", &reader, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
-    components.push_back(new AlertPanel("Alert Panel"));
-    components.push_back(new LiveDataPanel("Live Data", &producer));
+    components.push_back(new AlertPanel("Alert Panel", &dispatcher));
+    components.push_back(new LiveDataPanel("Live Data", &producer, &dispatcher));
     components.push_back(new FileUpload("File Upload"));
     producer.setReadCallback(logData);
     producer.start();

@@ -64,6 +64,7 @@ void WebSocketProducer::asyncRead() {
                 auto data = boost::asio::buffer_cast<const uint8_t *>(buffer.data());
                 std::vector<uint8_t> receivedData(data, data + bytes_transferred);
                 readCallback_(receivedData);
+                dispatcher->dispatchData(receivedData);
                 buffer.consume(bytes_transferred);
                 if (this->status) {
                     asyncRead();

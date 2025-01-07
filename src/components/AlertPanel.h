@@ -4,12 +4,16 @@
 #include "Component.h"
 #include "../Setting.h"
 #include "../Util.h"
+#include "../services/Dispatcher.h"
 
 class AlertPanel : public Component {
 private:
     std::vector<std::string> alerts;
+    Dispatcher *dispatcher;
 public:
-    AlertPanel(const char *name) : Component(name) {};
+    AlertPanel(const char *name, Dispatcher *dispatcher) : Component(name) {
+        this->dispatcher = dispatcher;
+    };
 
     ~AlertPanel() override;
 

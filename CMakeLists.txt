@@ -26,6 +26,10 @@ add_executable(HoustonV2 src/main.cpp
         src/components/FileUpload.cpp
         src/components/FileUpload.h
         external/httplib.h
+        src/services/consumer/DataConsumer.h
+        src/services/consumer/QueueData.cpp
+        src/services/consumer/QueueData.h
+        src/services/Dispatcher.h
 )
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 
