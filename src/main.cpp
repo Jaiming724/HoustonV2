@@ -123,6 +123,7 @@ int main(int, char **) {
     WebSocketProducer producer("WebSocket Producer", &dispatcher, "192.168.4.1", "8080");
 
     dispatcher.registerHandler(std::string("AlertConsumer"), std::make_shared<QueueData>());
+    dispatcher.registerHandler(std::string("LiveDataConsumer"), std::make_shared<QueueData>());
     components.push_back(new ControlPanel("Control Panel", &reader, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
     components.push_back(new AlertPanel("Alert Panel", &dispatcher));

@@ -7,5 +7,5 @@ class QueueData : public DataConsumer {
 
 public:
     void consume(std::vector<uint8_t> &data) override;
-    std::queue<std::string> queue;
+    std::queue<std::vector<uint8_t>> queue;
 };

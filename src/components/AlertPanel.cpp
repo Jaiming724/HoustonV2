@@ -17,7 +17,16 @@ void AlertPanel::start() {
 void AlertPanel::render() {
     QueueData *queueData = (QueueData *) dispatcher->getHandler(std::string("AlertConsumer")).get();
     while (!queueData->queue.empty()) {
-        alerts.push_back(queueData->queue.front());
+        auto val = queueData->queue.front();
+        std::string str(val.begin() + 2, val.begin() + 4);
+
+        uint32_t intValue = 0;
+        std::memcpy(&intValue, &val[4], sizeof(intValue));
+
+        // Step 3: Append the integer to the string
+        str += " is set to value: " + std::to_string(intValue);
+
+        alerts.push_back(str);
         queueData->queue.pop();
     }
     ImGui::Begin("Alerts");
