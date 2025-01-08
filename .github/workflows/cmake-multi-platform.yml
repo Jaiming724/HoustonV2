@@ -63,25 +63,13 @@ jobs:
         else
           echo "Not running on Linux."
         fi
-      shell: bash
-    - name: Cache vcpkg
-      uses: actions/cache@v3
-      with:
-        path: |
-          ./vcpkg/packages
-          ./vcpkg/downloads
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-
-          
+      shell: bash          
     - name: Install vcpkg
       run: |
-        if [ ! -d "vcpkg" ]; then
-          git clone https://github.com/microsoft/vcpkg.git
-          cd vcpkg
-          ./bootstrap-vcpkg.sh
-          ./vcpkg integrate install
-        fi
+        git clone https://github.com/microsoft/vcpkg.git
+        cd vcpkg
+        ./bootstrap-vcpkg.sh
+        ./vcpkg integrate install
       shell: bash
 
     - name: Install vcpkg packages
