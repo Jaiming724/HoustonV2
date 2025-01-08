@@ -8,7 +8,7 @@ void WebSocketProducer::init() {
 
 }
 
-void WebSocketProducer::start() {
+bool WebSocketProducer::start() {
     try {
         this->status = true;
         auto const results = resolver.resolve(host, port);
@@ -16,15 +16,23 @@ void WebSocketProducer::start() {
             std::cout << "IP: " << endpoint.endpoint().address()
                       << ", Port: " << endpoint.endpoint().port() << std::endl;
         }
-        boost::asio::connect(ws.next_layer(), results.begin(), results.end());
+        auto connected_endpoint = boost::asio::connect(ws.next_layer(), results.begin(), results.end());
+        if (connected_endpoint == results.end()) {
+            std::cerr << "Failed to connect to any endpoint." << std::endl;
+            this->status = false;
+            return false;
+        }
+
         ws.handshake(host, "/ws");
         std::cout << "Connected to WebSocket server." << std::endl;
         asyncRead();
-        std::vector<uint8_t> binaryData = {0xAA, 0xBB, 0xCC, 0xDD, 0xAA, 0xBB};
 
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << std::endl;
+        this->status = false;
+        return false;
     }
+    return true;
 
 }
 
@@ -84,6 +92,4 @@ void WebSocketProducer::stop() {
     ioc.stop(); // Ensure io_context stops all work
 }
 
-WebSocketProducer::~WebSocketProducer() {
-
-}
+WebSocketProducer::~WebSocketProducer() = default;

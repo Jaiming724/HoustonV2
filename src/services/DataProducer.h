@@ -21,7 +21,9 @@ public:
 
     virtual void init() {};
 
-    virtual void start() {};
+    virtual bool start() {
+        return false;
+    };
 
     virtual void fetch() {};
 

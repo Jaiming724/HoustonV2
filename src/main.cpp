@@ -124,13 +124,13 @@ int main(int, char **) {
 
     dispatcher.registerHandler(std::string("AlertConsumer"), std::make_shared<QueueData>());
     dispatcher.registerHandler(std::string("LiveDataConsumer"), std::make_shared<QueueData>());
-    components.push_back(new ControlPanel("Control Panel", &reader, &components));
+    components.push_back(new ControlPanel("Control Panel", &producer, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel"));
     components.push_back(new AlertPanel("Alert Panel", &dispatcher));
     components.push_back(new LiveDataPanel("Live Data", &producer, &dispatcher));
     components.push_back(new FileUpload("File Upload"));
     producer.setReadCallback(logData);
-    producer.start();
+
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())

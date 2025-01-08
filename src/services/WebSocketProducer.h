@@ -25,7 +25,7 @@ public:
 
     void init() override;
 
-    void start() override;
+    bool start() override;
 
     void fetch() override;
 
@@ -37,6 +37,11 @@ public:
 
     void setReadCallback(std::function<void(const std::vector<uint8_t> &)> callback) {
         readCallback_ = std::move(callback);
+    }
+
+    void setAddress(const char *addr, const char *p) {
+        this->host = addr;
+        this->port = p;
     }
 
 };

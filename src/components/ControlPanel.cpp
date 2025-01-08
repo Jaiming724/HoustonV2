@@ -3,6 +3,7 @@
 //
 
 #include "ControlPanel.h"
+#include "../services/WebSocketProducer.h"
 
 void ControlPanel::start() {
 
@@ -10,53 +11,54 @@ void ControlPanel::start() {
 
 void ControlPanel::render() {
     ImGui::Begin("Control Panel");
-    static char inputText[256] = "COM4"; // Buffer to store input text
-    ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
-    char portNumber[20];
-#ifdef IS_WINDOWS
 
-    if (ImGui::Button("Detect Ports")) {
-        HANDLE hSerial;
+    ImGui::InputText("Address", addressBuf, IM_ARRAYSIZE(addressBuf));
+    ImGui::InputText("Port", portBuf, IM_ARRAYSIZE(portBuf));
 
-        for (int i = 1; i <= 256; i++) {
-            std::sprintf(portNumber, "\\\\.\\com%d", i);
+//#ifdef IS_WINDOWS
+//
+//    if (ImGui::Button("Detect Ports")) {
+//        HANDLE hSerial;
+//
+//        for (int i = 1; i <= 256; i++) {
+//            std::sprintf(portNumber, "\\\\.\\com%d", i);
+//
+//            hSerial = CreateFile(portNumber, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
+//                                 0);
+//            if (hSerial != INVALID_HANDLE_VALUE) {
+//
+//                std::cout << "Detected port: COM" << i << std::endl;
+//            }
+//            CloseHandle(hSerial);
+//
+//            memset(portNumber, 0, sizeof(portNumber));
+//        }
+//
+//    }
+//#endif
+    if (enable) {
+        if (ImGui::Button("Stop")) {
 
-            hSerial = CreateFile(portNumber, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
-                                 0);
-            if (hSerial != INVALID_HANDLE_VALUE) {
-
-                std::cout << "Detected port: COM" << i << std::endl;
-            }
-            CloseHandle(hSerial);
-
-            memset(portNumber, 0, sizeof(portNumber));
-        }
-
-    }
-#endif
-
-    if (Setting::isEnable) {
-        if (ImGui::Button("Detach")) {
-            std::cout << "Detach" << std::endl;
-            Setting::isEnableMutex.lock();
-            Setting::isEnable = false;
-            Setting::isEnableMutex.unlock();
-            reader->close();
+            dataProducer->stop();
             for (auto &component: *pVector) {
                 component->stop();
             }
+            enable = false;
         }
     } else {
-        if (ImGui::Button("Attach")) {
+        if (ImGui::Button("Start")) {
             std::cout << "Attach" << std::endl;
             for (auto &component: *pVector) {
                 component->start();
             }
-            Setting::portName = inputText;
-            reader->open(Setting::portName);
-            Setting::isEnableMutex.lock();
-            Setting::isEnable = true;
-            Setting::isEnableMutex.unlock();
+            //TODO add a way to select the producer
+            auto *wsProducer = dynamic_cast<WebSocketProducer *>(dataProducer);
+            wsProducer->setAddress(addressBuf, portBuf);
+            if (!wsProducer->start()) {
+                std::cout << "Failed to start producer" << std::endl;
+            } else {
+                enable = true;
+            }
         }
     }
     ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -64,6 +66,8 @@ void ControlPanel::render() {
 }
 
 void ControlPanel::stop() {
+    enable = false;
+    dataProducer->stop();
 }
 
 ControlPanel::~ControlPanel() {
