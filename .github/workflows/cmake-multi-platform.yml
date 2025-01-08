@@ -63,32 +63,12 @@ jobs:
         else
           echo "Not running on Linux."
         fi
-      shell: bash
-    - name: Cache vcpkg
-      uses: actions/cache@v3
-      with:
-        path: |
-          ./vcpkg/packages
-          ./vcpkg/downloads
-        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-
-          
+      shell: bash          
     - name: Install vcpkg
       run: |
-        if [ ! -d "vcpkg" ]; then
-          rm -rf vcpkg
-        fi
         git clone https://github.com/microsoft/vcpkg.git
         cd vcpkg
-        if [ -f "bootstrap-vcpkg.sh" ]; then
-          ./bootstrap-vcpkg.sh
-        elif [ -f "bootstrap-vcpkg.bat" ]; then
-          ./bootstrap-vcpkg.bat
-        else
-          echo "Error: vcpkg bootstrap script not found!" >&2
-          exit 1
-        fi
+        ./bootstrap-vcpkg.sh
         ./vcpkg integrate install
       shell: bash
 
