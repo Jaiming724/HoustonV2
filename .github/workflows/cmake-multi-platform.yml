@@ -77,10 +77,18 @@ jobs:
     - name: Install vcpkg
       run: |
         if [ ! -d "vcpkg" ]; then
-          git clone https://github.com/microsoft/vcpkg.git
+          rm -rf vcpkg
         fi
+        git clone https://github.com/microsoft/vcpkg.git
         cd vcpkg
-        ./bootstrap-vcpkg.sh
+        if [ -f "bootstrap-vcpkg.sh" ]; then
+          ./bootstrap-vcpkg.sh
+        elif [ -f "bootstrap-vcpkg.bat" ]; then
+          ./bootstrap-vcpkg.bat
+        else
+          echo "Error: vcpkg bootstrap script not found!" >&2
+          exit 1
+        fi
         ./vcpkg integrate install
       shell: bash
 
