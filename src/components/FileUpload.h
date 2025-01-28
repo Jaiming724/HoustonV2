@@ -9,7 +9,9 @@ private:
     NFD::UniquePath outPath;
     std::unordered_map<std::string, std::string> map;
     httplib::Client client;
-
+    NFD::Guard nfdGuard;
+    nfdfilteritem_t filterItem[1] = {{"BinFile", "bin"}};
+    bool shouldRefreshMap = false;
 public:
     FileUpload(const char *name);
 
@@ -27,7 +29,7 @@ public:
 
     int deleteFiles(const std::string &fileName);
 
-    int flashFile(const std::string &fileName, std::string board);
+    int flashFile(const std::string &fileName, const std::string &board);
 };
 
 

@@ -27,7 +27,7 @@ public:
         } else if (!data.empty() && data[0] == 0x19){
             auto it = handlerMap.find("LiveDataConsumer");
             if (it != handlerMap.end()) {
-                std::cout << "found live data consumer" << std::endl;
+                //std::cout << "found live data consumer" << std::endl;
                 it->second->consume(data);
             }
         }

@@ -58,8 +58,8 @@ int FileUpload::uploadFiles(const std::string &filepath) {
     return res->status;
 }
 
-int FileUpload::flashFile(const std::string &fileName, std::string board) {
-    auto res = client.Post("/flash/" + board+"/" + fileName, "", "text/plain");
+int FileUpload::flashFile(const std::string &fileName, const std::string &board) {
+    auto res = client.Post("/flash/" + board + "/" + fileName, "", "text/plain");
     printRes(res);
     return res->status;
 }
@@ -80,8 +80,8 @@ void FileUpload::render() {
     ImGui::SameLine();
     if (ImGui::Button("Select File")) {
         // Open a file dialog
-        NFD::Guard nfdGuard;
-        nfdresult_t result = NFD::OpenDialog(outPath, nullptr, 0);
+
+        nfdresult_t result = NFD::OpenDialog(outPath, filterItem, 1);
         if (result == NFD_OKAY) {
             std::cout << "Success!" << std::endl << outPath.get() << std::endl;
         } else if (result == NFD_CANCEL) {
@@ -91,13 +91,20 @@ void FileUpload::render() {
         }
     }
     ImGui::SameLine();
+
     if (ImGui::Button("Upload File")) {
         //TODO check for correct size, is .bin, correctly uploaded
-        uploadFiles(outPath.get());
-        map = Util::parseKeyValuePairs(queryFiles());
+        if (outPath.get() != nullptr) {
+            uploadFiles(outPath.get());
+            shouldRefreshMap = true;
+        } else {
+            std::cout << "File Path is null" << std::endl;
+        }
+
     }
+
     if (ImGui::Button("Query File")) {
-        map = Util::parseKeyValuePairs(queryFiles());
+        shouldRefreshMap = true;
     }
 
     if (!map.empty()) {
@@ -124,30 +131,36 @@ void FileUpload::render() {
 
                 // Column: Flash Rear Button
                 ImGui::TableSetColumnIndex(2);
-                if (ImGui::Button("Flash Rear")) {
+                std::string flashRearButtonId = "Flash Rear##" + it->first;
+                if (ImGui::Button(flashRearButtonId.c_str())) {
                     std::cout << "Flash Rear clicked for file: " << it->first << std::endl;
-                    flashFile(it->first,"R");
+                    flashFile(it->first, "R");
                 }
 
                 // Column: Flash Front Button
                 ImGui::TableSetColumnIndex(3);
-                if (ImGui::Button("Flash Front")) {
+                std::string flashFrontButtonId = "Flash Front##" + it->first;
+                if (ImGui::Button(flashFrontButtonId.c_str())) {
                     std::cout << "Flash Front clicked for file: " << it->first << std::endl;
-                    flashFile(it->first,"F");
-                    map = Util::parseKeyValuePairs(queryFiles());
+                    flashFile(it->first, "F");
+                    shouldRefreshMap = true;
                 }
                 ImGui::TableSetColumnIndex(4);
-                if (ImGui::Button("Delete")) {
+                std::string deleteButtonId = "Delete##" + it->first;
+                if (ImGui::Button(deleteButtonId.c_str())) {
                     std::cout << "Delete file: " << it->first << std::endl;
                     deleteFiles(it->first);
-                    map = Util::parseKeyValuePairs(queryFiles());
+                    shouldRefreshMap = true;
                 }
             }
 
             ImGui::EndTable();
         }
     }
-
+    if (shouldRefreshMap) {
+        map = Util::parseKeyValuePairs(queryFiles());
+        shouldRefreshMap = false;
+    }
     ImGui::End();
 }
 
