@@ -3,6 +3,9 @@
 #include "../pch.h"
 #include "Component.h"
 #include "../Util.h"
+#include "../services/Dispatcher.h"
+#include "../services/consumer/QueueData.h"
+#include "AlertPanel.h"
 
 class FileUpload : public Component {
 private:
@@ -12,8 +15,9 @@ private:
     NFD::Guard nfdGuard;
     nfdfilteritem_t filterItem[1] = {{"BinFile", "bin"}};
     bool shouldRefreshMap = false;
+    AlertPanel *alertPanel;
 public:
-    FileUpload(const char *name);
+    FileUpload(const char *name, AlertPanel *alertPanel);
 
     ~FileUpload() override;
 

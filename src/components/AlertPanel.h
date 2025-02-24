@@ -8,9 +8,10 @@
 
 class AlertPanel : public Component {
 private:
-    std::vector<std::string> alerts;
+
     Dispatcher *dispatcher;
 public:
+    std::vector<std::string> alerts;
     AlertPanel(const char *name, Dispatcher *dispatcher) : Component(name) {
         this->dispatcher = dispatcher;
     };

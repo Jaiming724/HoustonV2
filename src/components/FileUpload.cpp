@@ -1,12 +1,13 @@
 
 #include "FileUpload.h"
 
-FileUpload::FileUpload(const char *name) : Component(name), client("http://192.168.4.1") {
-
-}
 
 void FileUpload::start() {
     Component::start();
+}
+
+FileUpload::FileUpload(const char *name, AlertPanel *alertPanel) : Component(name), client("http://192.168.4.1") {
+    this->alertPanel = alertPanel;
 }
 
 FileUpload::~FileUpload() {
@@ -61,6 +62,11 @@ int FileUpload::uploadFiles(const std::string &filepath) {
 int FileUpload::flashFile(const std::string &fileName, const std::string &board) {
     auto res = client.Post("/flash/" + board + "/" + fileName, "", "text/plain");
     printRes(res);
+    if (res->status != 200 && res->status != 303) {
+        alertPanel->alerts.push_back("Failed to flash " + fileName);
+    } else {
+        alertPanel->alerts.push_back("Successfully flash " + fileName);
+    }
     return res->status;
 }
 
