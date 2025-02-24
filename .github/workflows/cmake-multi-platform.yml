@@ -85,14 +85,14 @@ jobs:
         cmake --build . --config Release
       shell: bash
     - name: Save binary as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: runner.os == 'Windows'
       with:
         name: ${{ runner.os }}-binary
         path: build/Release
 
     - name: Save binary as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: runner.os != 'Windows'
       with:
           name: ${{ runner.os }}-binary
