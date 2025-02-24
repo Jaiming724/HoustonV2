@@ -6,7 +6,7 @@ on:
   push:
     branches: [ "main","feat-**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main","dev"]
 
 jobs:
   build:
@@ -45,58 +45,56 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-    - name: Check if OS is Linux
-      run: |
-        if [ "${RUNNER_OS}" == "Linux" ]; then
-          echo "Running on Linux! Installing zip..."
-          sudo apt-get update
-          sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
-        else
-          echo "Not running on Linux."
-        fi
-      shell: bash
-    - name: Install vcpkg
-      run: |
-        if [ ! -d "vcpkg" ]; then
-
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive  # Ensure submodules are initialized and updated
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+      - name: Check if OS is Linux
+        run: |
+          if [ "${RUNNER_OS}" == "Linux" ]; then
+            echo "Running on Linux! Installing zip..."
+            sudo apt-get update
+            sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config libgtk-3-dev
+          else
+            echo "Not running on Linux."
+          fi
+        shell: bash
+      - name: Install vcpkg
+        run: |
           git clone https://github.com/microsoft/vcpkg.git
           cd vcpkg
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
-        fi
-      shell: bash
+        shell: bash
 
-    - name: Install vcpkg packages
-      run: |
-        ./vcpkg/vcpkg install
-      shell: bash
+      - name: Install vcpkg packages
+        run: |
+          ./vcpkg/vcpkg install
+        shell: bash
 
-    - name: Configure and build with CMake
-      run: |
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
-        cmake --build . --config Release
-      shell: bash
-    - name: Save binary as artifact
-      uses: actions/upload-artifact@v3
-      if: runner.os == 'Windows'
-      with:
-        name: ${{ runner.os }}-binary
-        path: build/Release
+      - name: Configure and build with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
+          cmake --build . --config Release
+        shell: bash
+      - name: Save binary as artifact
+        uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: ${{ runner.os }}-binary
+          path: build/Release
 
-    - name: Save binary as artifact
-      uses: actions/upload-artifact@v3
-      if: runner.os != 'Windows'
-      with:
+      - name: Save binary as artifact
+        uses: actions/upload-artifact@v4
+        if: runner.os != 'Windows'
+        with:
           name: ${{ runner.os }}-binary
           path: build/HoustonV2
     # - name: Configure CMake
