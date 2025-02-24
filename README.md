@@ -28,3 +28,18 @@ This is used to modify a value within the system
 ### Linux
 ```cmake -B . -S . -DCMAKE_TOOLCHAIN_FILE=[vckpg path]```
 ``` cmake --build . -- -j 4```
+
+### MacOS Instructions
+
+** Run these commands in CMakeLists.txt directory **
+
+0. Install cmake
+1. Install vcpkg (use ```$ brew install vcpkg```)
+2. Use vcpkg.json to install required vcpkg packages using command:
+```$ brew install vcpkg```
+3. Run this command to link vcpkg and get the DCMAKE_PREFIX_PATH:
+```$ vcpkg integrate install```
+3. Build, make, and run HoustonV2 with following commands:
+```$ cmake -DCMAKE_PREFIX_PATH='/[PATH_TO_VCPKG]/installed/arm64-osx/share/'```
+```$ make ```
+```$ ./HoustonV2 ```

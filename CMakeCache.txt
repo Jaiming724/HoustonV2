@@ -140,7 +140,7 @@ CMAKE_OSX_DEPLOYMENT_TARGET:STRING=
 CMAKE_OSX_SYSROOT:PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk
 
 //No help, variable specified on the command line.
-CMAKE_PREFIX_PATH:UNINITIALIZED=/Users/medsingla/Documents/Wind_Energy/vcpkg/vcpkg/installed/arm64-osx/share/
+CMAKE_PREFIX_PATH:UNINITIALIZED=/Users/medsingla/Documents/Wind_Energy/vcpkg/vcpkg/installed/arm64-osx/share/glad
 
 //Value Computed by CMake
 CMAKE_PROJECT_DESCRIPTION:STATIC=
@@ -209,6 +209,9 @@ CMAKE_STRIP:FILEPATH=/Library/Developer/CommandLineTools/usr/bin/strip
 
 //Path to a program.
 CMAKE_TAPI:FILEPATH=/Library/Developer/CommandLineTools/usr/bin/tapi
+
+//No help, variable specified on the command line.
+CMAKE_TOOLCHAIN_FILE:UNINITIALIZED=/Users/medsingla/Documents/Wind_Energy/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmakecleaihuigyiuv
 
 //If this value is on, makefiles will be generated without the
 // .SILENT directive, and all commands will be echoed to the console
