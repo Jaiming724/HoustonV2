@@ -39,7 +39,9 @@ This is used to modify a value within the system
 ```$ brew install vcpkg```
 3. Run this command to link vcpkg and get the DCMAKE_PREFIX_PATH:
 ```$ vcpkg integrate install```
-3. Build, make, and run HoustonV2 with following commands:
-```$ cmake -DCMAKE_PREFIX_PATH='/[PATH_TO_VCPKG]/installed/arm64-osx/share/'```
+4. Build, make, and run HoustonV2 with following commands:
+```$ mdkr build```
+```$ cd build```
+```$ cmake .. -DCMAKE_PREFIX_PATH='/[PATH_TO_VCPKG]/installed/arm64-osx/share/'```
 ```$ make ```
 ```$ ./HoustonV2 ```
