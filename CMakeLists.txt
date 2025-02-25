@@ -35,3 +35,10 @@ target_link_libraries(HoustonV2 PRIVATE implot::implot)
 find_package(OpenGL REQUIRED)
 #target_link_libraries(HoustonV2 PRIVATE opengl32.lib)
 target_link_libraries(HoustonV2 PRIVATE ${OPENGL_LIBRARIES})
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    target_compile_definitions(HoustonV2 PUBLIC "IS_WINDOWS")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_compile_definitions(HoustonV2 PUBLIC "IS_MACOS")
+endif()
+

@@ -40,8 +40,10 @@ void LiveDataPanel::render() {
     }
     ImGui::Begin("Live Data");
     for (const auto &it: intMap) {
-
-        if (ImGui::InputInt(dataMap[it.first].c_str(), it.second, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+        ImGui::InputInt(dataMap[it.first].c_str(), it.second, 1, 100);
+        ImGui::SameLine();
+        std::string buttonLabel = "Apply##" + it.first;
+        if (ImGui::Button(buttonLabel.c_str())) {
             Util::ModifyPacket modifyPacket;
             modifyPacket.int_data = *it.second;
             memcpy(modifyPacket.string_data, it.first.c_str(), 3);
@@ -49,7 +51,10 @@ void LiveDataPanel::render() {
         }
     }
     for (const auto &it: floatMap) {
-        if (ImGui::InputFloat(dataMap[it.first].c_str(), it.second, 1, 100, "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+        ImGui::InputFloat(dataMap[it.first].c_str(), it.second, 1, 100, "%.3f");
+        ImGui::SameLine();
+        std::string buttonLabel = "Apply##" + it.first;
+        if (ImGui::Button(buttonLabel.c_str())) {
             Util::ModifyPacket modifyPacket;
             modifyPacket.float_data = *it.second;
             memcpy(modifyPacket.string_data, it.first.c_str(), 3);
@@ -58,6 +63,7 @@ void LiveDataPanel::render() {
     }
     for (const auto &it: boolMap) {
         if (ImGui::Checkbox(dataMap[it.first].c_str(), it.second)) {
+            
             Util::ModifyPacket modifyPacket;
             modifyPacket.int_data = *it.second ? 1 : 0;
             memcpy(modifyPacket.string_data, it.first.c_str(), 3);
