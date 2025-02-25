@@ -3,8 +3,10 @@
 //
 
 #include "ControlPanel.h"
-#include <dirent.h>
-#include <sys/stat.h>
+#ifdef IS_MACOS
+    #include <dirent.h>
+    #include <sys/stat.h>
+#endif
 
 void ControlPanel::start() {
 
