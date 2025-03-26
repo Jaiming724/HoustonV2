@@ -2,13 +2,12 @@
 
 #include "../pch.h"
 class Component {
-private:
-    const char* name;
 
 public:
     Component(const char* name) {
         this->name = name;
     }
+    const char* name;
 
     virtual ~Component() {
     }

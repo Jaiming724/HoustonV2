@@ -32,6 +32,7 @@ std::string FileUpload::queryFiles() {
     // Send a GET request to the "/files" endpoint
     auto res = client.Get("/files");
     printRes(res);
+    alertPanel->alerts.push_back("Updated File List");
     return res->body;
 }
 

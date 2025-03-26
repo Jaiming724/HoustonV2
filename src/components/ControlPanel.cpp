@@ -4,6 +4,7 @@
 
 #include "ControlPanel.h"
 #include "../services/WebSocketProducer.h"
+#include "AlertPanel.h"
 
 void ControlPanel::start() {
 
@@ -44,6 +45,12 @@ void ControlPanel::render() {
                 component->stop();
             }
             enable = false;
+            for (auto &component: *pVector) {
+                if (strcmp(component->name, "Alert Panel") == 0) {
+                    ((AlertPanel *) component)->alerts.push_back(
+                            "Disconnected from " + std::string(addressBuf) + ":" + std::string(portBuf));
+                }
+            }
         }
     } else {
         if (ImGui::Button("Start")) {
@@ -57,6 +64,12 @@ void ControlPanel::render() {
             if (!wsProducer->start()) {
                 std::cout << "Failed to start producer" << std::endl;
             } else {
+                for (auto &component: *pVector) {
+                    if (strcmp(component->name, "Alert Panel") == 0) {
+                        ((AlertPanel *) component)->alerts.push_back(
+                                "Connected to " + std::string(addressBuf) + ":" + std::string(portBuf));
+                    }
+                }
                 enable = true;
             }
         }
