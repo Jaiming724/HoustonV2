@@ -6,6 +6,7 @@
 #include "Component.h"
 #include "../Util.h"
 #include "../Setting.h"
+#include "../services/Dispatcher.h"
 
 class TelemetryPanel : public Component {
 private:
@@ -22,12 +23,15 @@ private:
     bool savingFile = false;
     std::vector<std::string> csvHeaders;
     std::ofstream file;
-
+    Dispatcher *dispatcher;
     int timer = 0;
-
+    nlohmann::json jsonParser;
 public:
 
-    TelemetryPanel(const char *name) : Component(name) {
+    TelemetryPanel(const char *name, Dispatcher *dispatcher) : Component(name) {
+        this->dispatcher = dispatcher;
+        std::ifstream f(R"(C:\Users\Jiami\Desktop\cpp\Playground\PSFR_CAN_Protocol_V5.json)");
+        jsonParser = nlohmann::json::parse(f);
     }
 
     ~TelemetryPanel() override;
@@ -37,6 +41,6 @@ public:
     void render() override;
 
     void stop() override;
-
+    void parseCanPacket(const nlohmann::json& dbc, const uint8_t* packet);
     void graphData();
 };

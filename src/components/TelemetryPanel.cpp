@@ -1,59 +1,164 @@
+#include <bitset>
 #include "TelemetryPanel.h"
+#include "../services/consumer/QueueData.h"
 
 void TelemetryPanel::start() {
     telemetryMap.clear();
 }
 
 
+uint64_t extractBits(const uint8_t *data, int startBit, int bitLength, const std::string &endianess) {
+    uint64_t raw = 0;
+
+    // Flatten the 64-bit CAN payload to a bit string
+    std::bitset<64> bitset;
+    for (int i = 0; i < 8; ++i) {
+        std::bitset<8> byteBits(data[i]);
+        for (int b = 0; b < 8; ++b) {
+            bitset[(7 - i) * 8 + b] = byteBits[b];  // big-endian layout
+        }
+    }
+
+    if (endianess == "intel") {
+        for (int i = 0; i < bitLength; ++i) {
+            int byteIndex = (startBit + i) / 8;
+            int bitInByte = (startBit + i) % 8;
+            bool bit = (data[byteIndex] >> bitInByte) & 0x1;
+            raw |= (uint64_t(bit) << i);
+        }
+    } else {
+        // Motorola: MSB-first within byte, big-endian bytes
+        // Reverse Motorola logic is tricky: real DBC parsing tools handle this
+        int byte = startBit / 8;
+        int bitInByte = startBit % 8;
+        int bitIndex = (7 - byte) * 8 + (7 - bitInByte);  // flip byte and bit
+
+        for (int i = 0; i < bitLength; ++i) {
+            raw <<= 1;
+            raw |= bitset[bitIndex - i];
+        }
+    }
+
+    return raw;
+}
+
+double applyScaling(double raw, double scale, double offset) {
+    return raw * scale + offset;
+}
+
+void TelemetryPanel::parseCanPacket(const nlohmann::json &dbc, const uint8_t *packet) {
+    uint16_t canId = (packet[0] << 8) | packet[1];
+    const uint8_t *data = packet + 2;
+
+    for (const auto &msg: dbc["messages"]) {
+        if (msg["id"] == canId) {
+            std::cout << "Matched Message: " << msg["name"] << "\n";
+
+            for (const auto &sig: msg["signals"]) {
+                std::string name = sig["name"];
+                int startbit = sig["startbit"];
+                int bitlength = sig["bitlength"];
+                std::string endianess = sig["endianess"];
+                double scale = sig["scaling"];
+                double offset = sig["offset"];
+                bool isSigned = sig["signed"];
+                std::string units = sig["units"];
+
+                uint64_t raw = extractBits(data, startbit, bitlength, endianess);
+
+                // Sign extension if needed
+                if (isSigned && bitlength < 64) {
+                    int64_t signedRaw = raw;
+                    int64_t signBit = 1LL << (bitlength - 1);
+                    if (signedRaw & signBit) {
+                        signedRaw |= ~((1LL << bitlength) - 1);
+                    }
+                    double value = applyScaling(static_cast<double>(signedRaw), scale, offset);
+                    std::cout << name << ": " << value << " " << units << "\n";
+                    std::string key = name + " " + std::to_string(value) + " " + units;
+
+                    telemetryMap[name] = key;
+
+                } else {
+                    double value = applyScaling(static_cast<double>(raw), scale, offset);
+                    std::string key = name + " " + std::to_string(value) + " " + units;
+
+                    telemetryMap[name] = key;
+                }
+            }
+
+            return;
+        }
+    }
+
+    std::cout << "CAN ID " << canId << " not found in JSON.\n";
+}
+
 void TelemetryPanel::render() {
     timer += ImGui::GetIO().DeltaTime * 1000; // Convert deltaTime to milliseconds
+    QueueData *queueData = (QueueData *) dispatcher->getHandler(std::string("TelemetryConsumer")).get();
+    while (!queueData->queue.empty()) {
+        auto arr = queueData->queue.front();
+        uint16_t id = ((uint8_t) arr[0] << 8) | (uint8_t) arr[1];
+        parseCanPacket(jsonParser, arr.data());
 
-    if (Setting::telemetryStr.length() >= 4) {
-        timer = 0;
-        initalized = true;
 
-        telemetryMap.clear();
-        Setting::telemetryMutex.lock();
-        std::string remainingString = Setting::telemetryStr.substr(4);
-        Setting::telemetryMutex.unlock();
-        std::vector<std::string> tokens = Util::splitString(remainingString, ';');
-        for (auto &s: tokens) {
-            std::vector<std::string> keyValue = Util::splitString(s, ':');
-            if (keyValue.size() == 2) {
-                telemetryMap[keyValue[0]] = keyValue[1];
-                if (dataMap.count(keyValue[0]) == 0) {
-                    dataMap[keyValue[0]] = new Util::ScrollingBuffer();
-                }
-                if (showMap.count(keyValue[0]) == 0) {
-                    showMap[keyValue[0]] = new bool(false);
-                }
-            }
-        }
-
-        if (savingFile) {
-            auto now = std::chrono::system_clock::now();
-            auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-            auto value = ms.time_since_epoch().count();
-            file << value << ",";
-            for (int i = 1; i < csvHeaders.size(); i++) {
-                if (telemetryMap.count(csvHeaders[i]) > 0) {
-                    file << telemetryMap[csvHeaders[i]] << ",";
-                } else {
-                    file << "-1,";
-                    continue;
-                }
-                //std::cout << telemetryMap[csvHeader] << ",";
-            }
-            file << std::endl;
-            //std::cout << std::endl;
-        }
+//        if (id == 0x500) {
+//            for (uint8_t byte: arr) {
+//                std::cout << "0x" << std::hex << ((int) byte) << " ";
+//            }
+//            std::cout << std::dec << std::endl;  // reset to decimal output
+//        }
+        queueData->queue.pop();
 
     }
+//    if (Setting::telemetryStr.length() >= 4) {
+//        timer = 0;
+//        initalized = true;
+//
+//        telemetryMap.clear();
+//        Setting::telemetryMutex.lock();
+//        std::string remainingString = Setting::telemetryStr.substr(4);
+//        Setting::telemetryMutex.unlock();
+//        std::vector<std::string> tokens = Util::splitString(remainingString, ';');
+//        for (auto &s: tokens) {
+//            std::vector<std::string> keyValue = Util::splitString(s, ':');
+//            if (keyValue.size() == 2) {
+//                telemetryMap[keyValue[0]] = keyValue[1];
+//                if (dataMap.count(keyValue[0]) == 0) {
+//                    dataMap[keyValue[0]] = new Util::ScrollingBuffer();
+//                }
+//                if (showMap.count(keyValue[0]) == 0) {
+//                    showMap[keyValue[0]] = new bool(false);
+//                }
+//            }
+//        }
+//
+//        if (savingFile) {
+//            auto now = std::chrono::system_clock::now();
+//            auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+//            auto value = ms.time_since_epoch().count();
+//            file << value << ",";
+//            for (int i = 1; i < csvHeaders.size(); i++) {
+//                if (telemetryMap.count(csvHeaders[i]) > 0) {
+//                    file << telemetryMap[csvHeaders[i]] << ",";
+//                } else {
+//                    file << "-1,";
+//                    continue;
+//                }
+//                //std::cout << telemetryMap[csvHeader] << ",";
+//            }
+//            file << std::endl;
+//            //std::cout << std::endl;
+//        }
+//
+//    }
 
     // Create a window
     ImGui::Begin("Telemetry");
     ImGui::Columns(2, "Data");
     ImGui::Separator();
+
     for (const auto &pair: telemetryMap) {
         ImGui::Text("%s", pair.first.c_str());
         ImGui::NextColumn();

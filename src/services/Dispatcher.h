@@ -24,8 +24,14 @@ public:
                 std::cout << "found it" << std::endl;
                 it->second->consume(data);
             }
-        } else if (!data.empty() && data[0] == 0x19){
+        } else if (!data.empty() && data[0] == 0x19) {
             auto it = handlerMap.find("LiveDataConsumer");
+            if (it != handlerMap.end()) {
+                //std::cout << "found live data consumer" << std::endl;
+                it->second->consume(data);
+            }
+        } else {
+            auto it = handlerMap.find("TelemetryConsumer");
             if (it != handlerMap.end()) {
                 //std::cout << "found live data consumer" << std::endl;
                 it->second->consume(data);

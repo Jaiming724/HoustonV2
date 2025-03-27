@@ -22,4 +22,5 @@
 #include <string>
 #include "../external/nativefiledialog-extended/src/include/nfd.hpp"
 #include "../external/httplib.h"
+#include "../external/json.hpp"
 #endif //HOUSTONV2_PCH_H
