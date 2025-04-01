@@ -49,43 +49,51 @@ double applyScaling(double raw, double scale, double offset) {
 void TelemetryPanel::parseCanPacket(const nlohmann::json &dbc, const uint8_t *packet) {
     uint16_t canId = (packet[0] << 8) | packet[1];
     const uint8_t *data = packet + 2;
+    auto it = jsonMap.find(canId);
 
-    for (const auto &msg: dbc["messages"]) {
-        if (msg["id"] == canId) {
-            std::cout << "Matched Message: " << msg["name"] << "\n";
+    if (it != jsonMap.end()) {
+        const nlohmann::json &msg = it->second;
 
-            for (const auto &sig: msg["signals"]) {
-                std::string name = sig["name"];
-                int startbit = sig["startbit"];
-                int bitlength = sig["bitlength"];
-                std::string endianess = sig["endianess"];
-                double scale = sig["scaling"];
-                double offset = sig["offset"];
-                bool isSigned = sig["signed"];
-                std::string units = sig["units"];
+        //std::cout << "Matched Message: " << msg["name"] << "\n";
 
-                uint64_t raw = extractBits(data, startbit, bitlength, endianess);
+        for (const auto &sig: msg["signals"]) {
+            std::string name = sig["name"];
+            int startbit = sig["startbit"];
+            int bitlength = sig["bitlength"];
+            std::string endianess = sig["endianess"];
+            double scale = sig["scaling"];
+            double offset = sig["offset"];
+            bool isSigned = sig["signed"];
+            std::string units = sig["units"];
 
-                // Sign extension if needed
-                if (isSigned && bitlength < 64) {
-                    int64_t signedRaw = raw;
-                    int64_t signBit = 1LL << (bitlength - 1);
-                    if (signedRaw & signBit) {
-                        signedRaw |= ~((1LL << bitlength) - 1);
-                    }
-                    double value = applyScaling(static_cast<double>(signedRaw), scale, offset);
-                    std::cout << name << ": " << value << " " << units << "\n";
-                    std::string key = name + " " + std::to_string(value) + " " + units;
+            uint64_t raw = extractBits(data, startbit, bitlength, endianess);
 
-                    telemetryMap[name] = key;
-
-                } else {
-                    double value = applyScaling(static_cast<double>(raw), scale, offset);
-                    std::string key = name + " " + std::to_string(value) + " " + units;
-
-                    telemetryMap[name] = key;
+            // Sign extension if needed
+            if (isSigned && bitlength < 64) {
+                int64_t signedRaw = raw;
+                int64_t signBit = 1LL << (bitlength - 1);
+                if (signedRaw & signBit) {
+                    signedRaw |= ~((1LL << bitlength) - 1);
                 }
+                double value = applyScaling(static_cast<double>(signedRaw), scale, offset);
+                if (canId == 0x500) {
+                    std::cout << name << ": " << value << " " << units << "\n";
+
+                }
+                std::string key = std::to_string(value) + " " + units;
+
+                telemetryMap[name] = key;
+
+            } else {
+                double value = applyScaling(static_cast<double>(raw), scale, offset);
+                if (canId == 0x500) {
+                    std::cout << name << ": " << value << " " << units << "\n";
+                }
+                std::string key = std::to_string(value) + " " + units;
+
+                telemetryMap[name] = key;
             }
+
 
             return;
         }
@@ -104,10 +112,7 @@ void TelemetryPanel::render() {
 
 
 //        if (id == 0x500) {
-//            for (uint8_t byte: arr) {
-//                std::cout << "0x" << std::hex << ((int) byte) << " ";
-//            }
-//            std::cout << std::dec << std::endl;  // reset to decimal output
+//            std::cout << "heartbeat" << std::endl;
 //        }
         queueData->queue.pop();
 
@@ -190,6 +195,26 @@ void TelemetryPanel::render() {
             file << std::endl;
 
             savingFile = true;
+        }
+    }
+    if (ImGui::Button("Select Json File")) {
+        // Open a file dialog
+
+        nfdresult_t result = NFD::OpenDialog(outPath, filterItem, 1);
+        if (result == NFD_OKAY) {
+            std::cout << "Success!" << std::endl << outPath.get() << std::endl;
+            std::ifstream f(outPath.get());
+            jsonParser = nlohmann::json::parse(f);
+            jsonMap.clear();
+            for (const auto &msg: jsonParser["messages"]) {
+                uint16_t id = msg["id"];
+                std::cout << "ID: " << id << std::endl;
+                jsonMap[id] = msg;
+            }
+        } else if (result == NFD_CANCEL) {
+            std::cout << "User pressed cancel." << std::endl;
+        } else {
+            std::cout << "Error: " << NFD::GetError() << std::endl;
         }
     }
 
