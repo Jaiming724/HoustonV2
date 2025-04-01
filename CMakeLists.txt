@@ -34,8 +34,11 @@ add_executable(HoustonV2 src/main.cpp
 )
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 
-find_package(glad CONFIG REQUIRED)
-target_link_libraries(HoustonV2 PRIVATE glad::glad)
+add_library(glad STATIC external/glad/src/gl.c)
+target_include_directories(glad PUBLIC external/glad/include)
+target_link_libraries(HoustonV2 PRIVATE glad)
+
+
 find_package(asio CONFIG REQUIRED)
 target_link_libraries(HoustonV2 PRIVATE asio::asio)
 find_package(glfw3 CONFIG REQUIRED)
