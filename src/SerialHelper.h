@@ -4,12 +4,10 @@
 #include "Setting.h"
 #include "Util.h"
 
-class ser;
-
 class SerialHelper {
 private:
-    asio::io_service io;
-    asio::serial_port port;
+    boost::asio::io_service io;
+    boost::asio::serial_port port;
     std::string *line = new std::string();
 
     long long start = -1;
@@ -21,10 +19,10 @@ public:
     void open(const std::string &port_name) {
         port.open(port_name);
 
-        port.set_option(asio::serial_port_base::baud_rate(115200));
-        port.set_option(asio::serial_port_base::character_size(8));
-        port.set_option(asio::serial_port_base::stop_bits(asio::serial_port_base::stop_bits::one));
-        port.set_option(asio::serial_port_base::parity(asio::serial_port_base::parity::none));
+        port.set_option(boost::asio::serial_port_base::baud_rate(115200));
+        port.set_option(boost::asio::serial_port_base::character_size(8));
+        port.set_option(boost::asio::serial_port_base::stop_bits(boost::asio::serial_port_base::stop_bits::one));
+        port.set_option(boost::asio::serial_port_base::parity(boost::asio::serial_port_base::parity::none));
     }
 
     void close() {
@@ -48,7 +46,7 @@ public:
         memcpy(buf + 3, modifyPacket->string_data, 3);
         memcpy(buf + 6, &modifyPacket->int_data, 4);
         memcpy(buf + 10, &checksum, 4);
-        asio::write(port, asio::buffer(buf, 14));
+        boost::asio::write(port, boost::asio::buffer(buf, 14));
 
     }
 
@@ -74,7 +72,7 @@ public:
         char c;
         line->clear();
         try {
-            while (read(port, asio::buffer(&c, 1))) {
+            while (read(port, boost::asio::buffer(&c, 1))) {
                 if (c == '@') {
                     if (line->length() >= 4 && line->compare(0, 4, "CWC!", 0, 4) == 0) {
                         Setting::telemetryMutex.lock();
