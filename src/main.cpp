@@ -40,15 +40,15 @@ static void glfw_error_callback(int error, const char *description) {
 }
 
 
-SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
+//SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
 std::vector<Component *> components = std::vector<Component *>();
 bool shouldRead = true;
-
-void readSerial() {
-    while (shouldRead) {
-        reader.readAndPrintLines();
-    }
-}
+//
+//void readSerial() {
+//    while (shouldRead) {
+//        reader.readAndPrintLines();
+//    }
+//}
 
 struct UserData {
 };
@@ -137,8 +137,8 @@ int main(int, char **) {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
-    std::thread t1(readSerial);
-    t1.detach();
+    //std::thread t1(readSerial);
+    //t1.detach();
     // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
