@@ -87,18 +87,16 @@ jobs:
         shell: bash
       
       
-      - name: Copy resource files to binary folder
+      - name: Debug - List workspace files
         run: |
-          RESOURCE_DIR="${{ github.workspace }}/resources"
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            DEST_DIR="${{ github.workspace }}/build/Release"
+          echo "Workspace: ${{ github.workspace }}"
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            dir /s ${{ github.workspace }}
           else
-            DEST_DIR="${{ github.workspace }}/build/HoustonV2"
+            ls -R ${{ github.workspace }}
           fi
-
-          echo "Copying resources from $RESOURCE_DIR to $DEST_DIR"
-          cp -r "$RESOURCE_DIR" "$DEST_DIR"
         shell: bash
+
       
       
       - name: Save binary as artifact
