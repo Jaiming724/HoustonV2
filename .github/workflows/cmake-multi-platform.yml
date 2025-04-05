@@ -101,6 +101,21 @@ jobs:
           echo "Workspace: ${{ github.workspace }}"
           ls -R ${{ github.workspace }}
 
+      
+      - name: Zip binary and resource folder (Windows only)
+        if: runner.os == 'Windows'
+        run: |
+          cd build/Release
+          7z a ../../HoustonV2-${{ runner.os }}.zip HoustonV2.exe ../resource
+        shell: pwsh
+      
+      - name: Upload zipped binary and resources (Windows only)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: HoustonV2-${{ runner.os }}
+          path: HoustonV2-${{ runner.os }}
+      
       - name: Save binary as artifact
         uses: actions/upload-artifact@v4
         if: runner.os == 'Windows'
@@ -120,8 +135,8 @@ jobs:
         if: runner.os != 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: HoustonV2-${{ runner.os }}.zip
-          path: HoustonV2-${{ runner.os }}.zip
+          name: HoustonV2-${{ runner.os }}
+          path: HoustonV2-${{ runner.os }}
 
       
 
