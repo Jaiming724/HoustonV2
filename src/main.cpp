@@ -182,6 +182,8 @@ int main(int, char **) {
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
     io.Fonts->AddFontDefault();
     roboto24Font = io.Fonts->AddFontFromFileTTF("../src/resource/Roboto-Regular.ttf", 24.f);
+    io.IniFilename = "../src/resource/imgui.ini";
+    ImGui::LoadIniSettingsFromDisk(io.IniFilename);
     //io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
