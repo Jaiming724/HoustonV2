@@ -4,6 +4,14 @@
 
 void TelemetryPanel::start() {
     telemetryMap.clear();
+    std::ifstream f(RESOURCE_PATH"/PSFR_CAN_Protocol_V5.json");
+    jsonParser = nlohmann::json::parse(f);
+    jsonMap.clear();
+    for (const auto &msg: jsonParser["messages"]) {
+        uint16_t id = msg["id"];
+        //std::cout << "ID: " << id << std::endl;
+        jsonMap[id] = msg;
+    }
 }
 
 
@@ -111,53 +119,11 @@ void TelemetryPanel::render() {
         parseCanPacket(jsonParser, arr.data());
 
 
-//        if (id == 0x500) {
-//            std::cout << "heartbeat" << std::endl;
-//        }
+        //std::cout << "heartbeat" << std::endl;
+
         queueData->queue.pop();
 
     }
-//    if (Setting::telemetryStr.length() >= 4) {
-//        timer = 0;
-//        initalized = true;
-//
-//        telemetryMap.clear();
-//        Setting::telemetryMutex.lock();
-//        std::string remainingString = Setting::telemetryStr.substr(4);
-//        Setting::telemetryMutex.unlock();
-//        std::vector<std::string> tokens = Util::splitString(remainingString, ';');
-//        for (auto &s: tokens) {
-//            std::vector<std::string> keyValue = Util::splitString(s, ':');
-//            if (keyValue.size() == 2) {
-//                telemetryMap[keyValue[0]] = keyValue[1];
-//                if (dataMap.count(keyValue[0]) == 0) {
-//                    dataMap[keyValue[0]] = new Util::ScrollingBuffer();
-//                }
-//                if (showMap.count(keyValue[0]) == 0) {
-//                    showMap[keyValue[0]] = new bool(false);
-//                }
-//            }
-//        }
-//
-//        if (savingFile) {
-//            auto now = std::chrono::system_clock::now();
-//            auto ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
-//            auto value = ms.time_since_epoch().count();
-//            file << value << ",";
-//            for (int i = 1; i < csvHeaders.size(); i++) {
-//                if (telemetryMap.count(csvHeaders[i]) > 0) {
-//                    file << telemetryMap[csvHeaders[i]] << ",";
-//                } else {
-//                    file << "-1,";
-//                    continue;
-//                }
-//                //std::cout << telemetryMap[csvHeader] << ",";
-//            }
-//            file << std::endl;
-//            //std::cout << std::endl;
-//        }
-//
-//    }
 
     // Create a window
     ImGui::Begin("Telemetry");

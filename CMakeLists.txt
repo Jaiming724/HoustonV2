@@ -39,6 +39,8 @@ target_include_directories(glad PUBLIC external/glad/include)
 target_link_libraries(HoustonV2 PRIVATE glad)
 
 
+
+
 find_package(asio CONFIG REQUIRED)
 target_link_libraries(HoustonV2 PRIVATE asio::asio)
 find_package(glfw3 CONFIG REQUIRED)
@@ -63,3 +65,5 @@ target_link_libraries(HoustonV2 PRIVATE ${OPENGL_LIBRARIES})
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_compile_definitions(HoustonV2 PUBLIC "IS_WINDOWS")
 endif()
+add_compile_definitions(RESOURCE_PATH="${CMAKE_SOURCE_DIR}/src/resource")
+file(COPY ${CMAKE_SOURCE_DIR}/src/resource DESTINATION ${CMAKE_BINARY_DIR}/)
