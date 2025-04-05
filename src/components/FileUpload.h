@@ -7,6 +7,8 @@
 #include "../services/consumer/QueueData.h"
 #include "AlertPanel.h"
 
+extern ImFont *roboto24Font;
+
 class FileUpload : public Component {
 private:
     NFD::UniquePath outPath;
@@ -16,6 +18,11 @@ private:
     nfdfilteritem_t filterItem[1] = {{"BinFile", "bin"}};
     bool shouldRefreshMap = false;
     AlertPanel *alertPanel;
+    std::string flashFileName;
+    std::string flashBoard;
+    bool shouldShowConfirmPopup = false;
+    char confirmStrBuf[64] = {0};
+
 public:
     FileUpload(const char *name, AlertPanel *alertPanel);
 

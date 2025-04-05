@@ -43,6 +43,7 @@ static void glfw_error_callback(int error, const char *description) {
 //SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
 std::vector<Component *> components = std::vector<Component *>();
 bool shouldRead = true;
+ImFont *roboto24Font;
 //
 //void readSerial() {
 //    while (shouldRead) {
@@ -126,7 +127,7 @@ int main(int, char **) {
     dispatcher.registerHandler(std::string("LiveDataConsumer"), std::make_shared<QueueData>());
     dispatcher.registerHandler(std::string("TelemetryConsumer"), std::make_shared<QueueData>());
     components.push_back(new ControlPanel("Control Panel", &producer, &components));
-    components.push_back(new TelemetryPanel("Telemetry Panel",&dispatcher));
+    components.push_back(new TelemetryPanel("Telemetry Panel", &dispatcher));
     AlertPanel *alertPanel = new AlertPanel("Alert Panel", &dispatcher);
     components.push_back(alertPanel);
     components.push_back(new LiveDataPanel("Live Data", &producer, &dispatcher));
@@ -179,6 +180,8 @@ int main(int, char **) {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+    io.Fonts->AddFontDefault();
+    roboto24Font = io.Fonts->AddFontFromFileTTF("../src/resource/Roboto-Regular.ttf", 24.f);
     //io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
 

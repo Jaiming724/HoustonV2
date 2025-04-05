@@ -3,7 +3,7 @@
 
 
 void FileUpload::start() {
-    Component::start();
+    shouldRefreshMap = true;
 }
 
 FileUpload::FileUpload(const char *name, AlertPanel *alertPanel) : Component(name), client("http://192.168.4.1") {
@@ -79,6 +79,8 @@ int FileUpload::deleteFiles(const std::string &fileName) {
 
 void FileUpload::render() {
     ImGui::Begin("File Control Panel");
+
+
     if (outPath.get() == nullptr) {
         ImGui::Text("%s", "No file selected");
     } else {
@@ -141,16 +143,27 @@ void FileUpload::render() {
                 std::string flashRearButtonId = "Flash Rear##" + it->first;
                 if (ImGui::Button(flashRearButtonId.c_str())) {
                     std::cout << "Flash Rear clicked for file: " << it->first << std::endl;
-                    flashFile(it->first, "R");
+
+                    flashFileName = it->first;
+                    flashBoard = "R";
+                    shouldShowConfirmPopup = true;
+
+
+                    //flashFile(it->first, "R");
                 }
 
                 // Column: Flash Front Button
                 ImGui::TableSetColumnIndex(3);
                 std::string flashFrontButtonId = "Flash Front##" + it->first;
                 if (ImGui::Button(flashFrontButtonId.c_str())) {
+
+
+                    flashFileName = it->first;
+                    flashBoard = "F";
+                    shouldShowConfirmPopup = true;
                     std::cout << "Flash Front clicked for file: " << it->first << std::endl;
-                    flashFile(it->first, "F");
-                    shouldRefreshMap = true;
+                    //flashFile(it->first, "F");
+                    //shouldRefreshMap = true;
                 }
                 ImGui::TableSetColumnIndex(4);
                 std::string deleteButtonId = "Delete##" + it->first;
@@ -164,6 +177,43 @@ void FileUpload::render() {
             ImGui::EndTable();
         }
     }
+    if (shouldShowConfirmPopup) {
+        memset(confirmStrBuf, 0, 64);
+        ImGui::OpenPopup("flashConfirm");
+        shouldShowConfirmPopup = false;
+    }
+//    if (ImGui::IsPopupOpen("flashConfirm")) {
+//        ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(1, 1));
+//        //ImGui::SetNextWindowSize(ImVec2(500, 300), ImGuiCond_Always);
+//    }
+    if (ImGui::BeginPopupModal("flashConfirm", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        std::string confirmStr = flashBoard + ":" + flashFileName;
+        std::string label = "Please type " + confirmStr + " to confirm";
+
+        ImGui::PushFont(roboto24Font);
+        //ImGui::Text("%s", label.data());
+        //ImGui::InputTextMultiline("##FlashConfirmInput", confirmStrBuf, 64);
+        ImGui::InputText(label.data(), confirmStrBuf, 64);
+
+        if (ImGui::Button("Confirm")) {
+            std::cout << confirmStr << std::endl;
+            std::cout << std::string(confirmStrBuf) << std::endl;
+            if (std::strncmp(confirmStrBuf, confirmStr.c_str(), confirmStr.size()) == 0) {
+                alertPanel->alerts.push_back("Flashing: " + flashFileName);
+                flashFile(flashFileName, flashBoard);
+
+            } else {
+                std::cout << "fail to confirm " + confirmStr << std::endl;
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+            ImGui::CloseCurrentPopup();
+        ImGui::PopFont();
+        ImGui::EndPopup();
+    }
+
     if (shouldRefreshMap) {
         map = Util::parseKeyValuePairs(queryFiles());
         shouldRefreshMap = false;
@@ -172,6 +222,10 @@ void FileUpload::render() {
 }
 
 void FileUpload::stop() {
+    shouldRefreshMap = false;
+    map.clear();
+    flashFileName.clear();
+    flashBoard.clear();
     Component::stop();
 }
 
