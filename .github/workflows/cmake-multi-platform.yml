@@ -114,14 +114,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: HoustonV2-${{ runner.os }}
-          path: HoustonV2-${{ runner.os }}
-      
-      - name: Save binary as artifact
-        uses: actions/upload-artifact@v4
-        if: runner.os == 'Windows'
-        with:
-          name: ${{ runner.os }}-binary
-          path: build/Release
+          path: HoustonV2-${{ runner.os }}.zip
 
 
       - name: Zip binary and resource folder (non-Windows only)
@@ -136,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: HoustonV2-${{ runner.os }}
-          path: HoustonV2-${{ runner.os }}
+          path: HoustonV2-${{ runner.os }}.zip
 
       
 
