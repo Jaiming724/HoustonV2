@@ -115,7 +115,7 @@ jobs:
         if: runner.os != 'Windows'
         with:
           name: ${{ runner.os }}-binary
-          path:
+          path: |
             - build/HoustonV2
             - build/resource/
     # - name: Configure CMake
