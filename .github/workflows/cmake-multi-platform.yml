@@ -77,7 +77,7 @@ jobs:
         run: |
           ./vcpkg/vcpkg install
         shell: bash
-    
+
       - name: Configure and build with CMake
         run: |
           mkdir build
@@ -85,20 +85,22 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
           cmake --build . --config Release
         shell: bash
-      
-      
-      - name: Debug - List workspace files
+
+
+      - name: Debug - List workspace files (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
+          Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Recurse -Force
+
+      - name: Debug - List workspace files (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           echo "Workspace: ${{ github.workspace }}"
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            dir /s ${{ github.workspace }}
-          else
-            ls -R ${{ github.workspace }}
-          fi
-        shell: bash
+          ls -R ${{ github.workspace }}
 
-      
-      
       - name: Save binary as artifact
         uses: actions/upload-artifact@v4
         if: runner.os == 'Windows'
@@ -106,12 +108,16 @@ jobs:
           name: ${{ runner.os }}-binary
           path: build/Release
 
+
+
       - name: Save binary as artifact
         uses: actions/upload-artifact@v4
         if: runner.os != 'Windows'
         with:
           name: ${{ runner.os }}-binary
-          path: build/HoustonV2
+          path:
+            - build/HoustonV2
+            - build/resource/
     # - name: Configure CMake
     #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
     #   # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
