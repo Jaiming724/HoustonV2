@@ -109,15 +109,22 @@ jobs:
           path: build/Release
 
 
-
-      - name: Save binary as artifact
-        uses: actions/upload-artifact@v4
+      - name: Zip binary and resource folder (non-Windows only)
         if: runner.os != 'Windows'
+        run: |
+          cd build
+          zip -r ../HoustonV2-${{ runner.os }}.zip HoustonV2 resource
+
+  
+      - name: Upload zipped binary and resource folder (non-Windows only)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ runner.os }}-binary
-          path: |
-            - build/HoustonV2
-            - build/resource/
+          name: HoustonV2-${{ runner.os }}.zip
+          path: HoustonV2-${{ runner.os }}.zip
+
+      
+
     # - name: Configure CMake
     #   # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
     #   # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
