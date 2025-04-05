@@ -77,7 +77,7 @@ jobs:
         run: |
           ./vcpkg/vcpkg install
         shell: bash
-
+    
       - name: Configure and build with CMake
         run: |
           mkdir build
@@ -85,6 +85,22 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
           cmake --build . --config Release
         shell: bash
+      
+      
+      - name: Copy resource files to binary folder
+        run: |
+          RESOURCE_DIR="${{ github.workspace }}/resources"
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            DEST_DIR="${{ github.workspace }}/build/Release"
+          else
+            DEST_DIR="${{ github.workspace }}/build/HoustonV2"
+          fi
+
+          echo "Copying resources from $RESOURCE_DIR to $DEST_DIR"
+          cp -r "$RESOURCE_DIR" "$DEST_DIR"
+        shell: bash
+      
+      
       - name: Save binary as artifact
         uses: actions/upload-artifact@v4
         if: runner.os == 'Windows'
