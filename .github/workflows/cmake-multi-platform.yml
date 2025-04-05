@@ -109,7 +109,7 @@ jobs:
         run: |
           $zipPath = "${{ github.workspace }}\HoustonV2-${{ runner.os }}.zip"
           7z a $zipPath .\build\Release\*                # Add everything from Release
-          7z a $zipPath .\build\resource\*               # Add everything from resource/
+          7z a $zipPath .\build\resource\               # Add everything from resource/
         shell: pwsh
 
       
