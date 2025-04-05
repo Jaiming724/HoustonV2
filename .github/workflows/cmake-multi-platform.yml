@@ -102,12 +102,16 @@ jobs:
           ls -R ${{ github.workspace }}
 
       
-      - name: Zip binary and resource folder (Windows only)
+
+
+      - name: Zip Release and resource folder (Windows only)
         if: runner.os == 'Windows'
         run: |
-          cd build/Release
-          7z a ../../HoustonV2-${{ runner.os }}.zip HoustonV2.exe ../resource
+          $zipPath = "${{ github.workspace }}\HoustonV2-${{ runner.os }}.zip"
+          7z a $zipPath .\build\Release\*                # Add everything from Release
+          7z a $zipPath .\build\resource\*               # Add everything from resource/
         shell: pwsh
+
       
       - name: Upload zipped binary and resources (Windows only)
         if: runner.os == 'Windows'
