@@ -2,7 +2,6 @@
   "name": "houstonv2",
   "version": "0.0.1",
   "dependencies": [
-    "asio",
     "glfw3",
     {
       "name": "imgui",
@@ -13,6 +12,8 @@
       ]
     },
     "implot",
-    "boost-beast"
+    "boost-beast",
+    "boost-asio",
+    "boost-system"
   ]
 }

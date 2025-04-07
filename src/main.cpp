@@ -40,16 +40,16 @@ static void glfw_error_callback(int error, const char *description) {
 }
 
 
-//SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
+SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
 std::vector<Component *> components = std::vector<Component *>();
 bool shouldRead = true;
 ImFont *roboto24Font;
 //
-//void readSerial() {
-//    while (shouldRead) {
-//        reader.readAndPrintLines();
-//    }
-//}
+void readSerial() {
+    while (shouldRead) {
+        reader.readAndPrintLines();
+    }
+}
 
 struct UserData {
 };
