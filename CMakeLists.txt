@@ -31,8 +31,6 @@ add_executable(HoustonV2 src/main.cpp
         src/services/consumer/QueueData.h
         src/services/Dispatcher.h
         external/json.hpp
-        src/services/SerialProducer.cpp
-        src/services/SerialProducer.h
 )
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 
