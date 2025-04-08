@@ -6,7 +6,7 @@
 
 class SerialHelper {
 private:
-    boost::asio::io_service io;
+    boost::asio::io_context io;
     boost::asio::serial_port port;
     std::string *line = new std::string();
 
