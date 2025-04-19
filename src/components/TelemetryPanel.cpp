@@ -12,6 +12,9 @@ void TelemetryPanel::start() {
         //std::cout << "ID: " << id << std::endl;
         jsonMap[id] = msg;
     }
+//    for (const auto &sig: jsonMap[688]["signals"]) {
+//        std::cout << sig["name"] << std::endl;
+//    }
 }
 
 
@@ -84,30 +87,26 @@ void TelemetryPanel::parseCanPacket(const nlohmann::json &dbc, const uint8_t *pa
                     signedRaw |= ~((1LL << bitlength) - 1);
                 }
                 double value = applyScaling(static_cast<double>(signedRaw), scale, offset);
-                if (canId == 0x500) {
-                    std::cout << name << ": " << value << " " << units << "\n";
 
-                }
                 std::string key = std::to_string(value) + " " + units;
 
                 telemetryMap[name] = key;
 
             } else {
                 double value = applyScaling(static_cast<double>(raw), scale, offset);
-                if (canId == 0x500) {
-                    std::cout << name << ": " << value << " " << units << "\n";
-                }
+
                 std::string key = std::to_string(value) + " " + units;
 
                 telemetryMap[name] = key;
             }
 
 
-            return;
         }
+    } else {
+        std::cout << "CAN ID " << canId << " not found in JSON.\n";
+
     }
 
-    std::cout << "CAN ID " << canId << " not found in JSON.\n";
 }
 
 void TelemetryPanel::render() {
