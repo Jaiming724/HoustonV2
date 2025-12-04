@@ -8,7 +8,7 @@ class ser;
 
 class SerialHelper {
 private:
-    asio::io_service io;
+    asio::io_context io;
     asio::serial_port port;
     std::string *line = new std::string();
 
