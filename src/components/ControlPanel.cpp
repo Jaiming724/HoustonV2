@@ -1,6 +1,3 @@
-//
-// Created by Scratch on 11/19/2023.
-//
 
 #include "ControlPanel.h"
 
@@ -13,6 +10,8 @@ void ControlPanel::render() {
     static char inputText[256] = "COM4"; // Buffer to store input text
     ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
     char portNumber[20];
+
+#ifdef _WIN32
     if (ImGui::Button("Detect Ports")) {
         HANDLE hSerial;
 
@@ -31,6 +30,7 @@ void ControlPanel::render() {
         }
 
     }
+#endif
     if (Setting::isEnable) {
         if (ImGui::Button("Detach")) {
             std::cout << "Detach" << std::endl;
