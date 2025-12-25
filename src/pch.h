@@ -1,14 +1,9 @@
-//
-// Created by Scratch on 12/23/2023.
-//
-
-#ifndef HOUSTONV2_PCH_H
-#define HOUSTONV2_PCH_H
+#pragma once
+#ifdef __cplusplus
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "implot.h"
-#include <iostream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -16,4 +11,4 @@
 #include <chrono>
 #include <thread>
 #include <map>
-#endif //HOUSTONV2_PCH_H
+#endif

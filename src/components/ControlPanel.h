@@ -1,16 +1,20 @@
 #pragma once
+
 #include "../pch.h"
 #include "Component.h"
-#include "../SerialHelper.h"
+#include "../Dispatcher.h"
+#include "../producer/DataProducer.h"
 
 class ControlPanel : public Component {
 private:
-    SerialHelper *reader;
     std::vector<Component *> *pVector;
+    bool isEnable = false;
+    Dispatcher dispatcher;
+    DataProducer *dataProducer = nullptr;
 public:
 
-    ControlPanel(const char *name, SerialHelper *reader, std::vector<Component *> *pVector) : Component(name) {
-        this->reader = reader;
+    ControlPanel(const char *name, Dispatcher *dispatcher, std::vector<Component *> *pVector) : Component(name,
+                                                                                                          dispatcher) {
         this->pVector = pVector;
     }
 

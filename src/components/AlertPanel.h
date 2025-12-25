@@ -9,7 +9,7 @@ class AlertPanel : public Component {
 private:
     std::vector<std::string> alerts;
 public:
-    AlertPanel(const char *name) : Component(name) {};
+    AlertPanel(const char *name, Dispatcher *dispatcher) : Component(name, dispatcher) {};
 
     ~AlertPanel() override;
 

@@ -1,17 +1,18 @@
 #pragma once
 
 #include "../pch.h"
+#include "../Dispatcher.h"
+
 class Component {
 private:
-    const char* name;
-
+    const char *name;
 public:
-    Component(const char* name) {
-        this->name = name;
+    Dispatcher *dispatcher;
+
+    Component(const char *name, Dispatcher *dispatcher) : name(name), dispatcher(dispatcher) {
     }
 
-    virtual ~Component() {
-    }
+    virtual ~Component() = default;
 
     virtual void start() {};
 

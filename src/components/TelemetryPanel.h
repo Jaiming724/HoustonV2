@@ -27,16 +27,16 @@ private:
 
 public:
 
-    TelemetryPanel(const char *name) : Component(name) {
+    TelemetryPanel(const char *name, Dispatcher *dispatcher) : Component(name, dispatcher) {
     }
 
-    ~TelemetryPanel() override;
-
-    void start() override;
-
-    void render() override;
-
-    void stop() override;
-
-    void graphData();
+//    ~TelemetryPanel() override;
+//
+//    void start() override;
+//
+//    void render() override;
+//
+//    void stop() override;
+//
+//    void graphData();
 };

@@ -3,6 +3,7 @@
 //
 
 #include "AlertPanel.h"
+#include "../consumer/QueueData.h"
 
 
 AlertPanel::~AlertPanel() {
@@ -14,21 +15,15 @@ void AlertPanel::start() {
 }
 
 void AlertPanel::render() {
-    if (!Setting::alertQueue.empty()) {
-        //std::cout<<"Debug::"<<Setting::alertStr<<std::endl;
-        Setting::alertMutex.lock();
-        while (!Setting::alertQueue.empty()) {
-            std::string currentAlert = Setting::alertQueue.front();
-            Setting::alertQueue.pop();
-            std::string remainingString = currentAlert.substr(5);
-            std::vector<std::string> tokens = Util::splitString(remainingString, ';');
-            for (int i = 0; i < tokens.size() - 1; i++) {
-                alerts.push_back(tokens.at(i));
-            }
+    std::shared_ptr<DataConsumer> consumer = dispatcher->getHandler("AlertPanel");
+    if (consumer) {
+        auto *queueData = dynamic_cast<QueueData *>(consumer.get());
+        while (!queueData->queue.empty()) {
+            std::vector<uint8_t> &data = queueData->queue.front();
+            alerts.emplace_back(data.begin(), data.end());
+            queueData->queue.pop();
         }
-        Setting::alertMutex.unlock();
     }
-
     ImGui::Begin("Alerts");
     for (auto &s: alerts) {
         ImGui::Text("%s", s.c_str());
@@ -44,10 +39,5 @@ void AlertPanel::render() {
 
 void AlertPanel::stop() {
     alerts.clear();
-    Setting::alertMutex.lock();
-    while (!Setting::alertQueue.empty()) {
-        Setting::alertQueue.pop();
-    }
-    Setting::alertMutex.unlock();
 }
 

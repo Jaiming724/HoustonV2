@@ -1,10 +1,8 @@
 
 
 #include "pch.h"
-#include "SerialHelper.h"
 #include "components/Component.h"
 #include "components/ControlPanel.h"
-#include "Setting.h"
 #include "components/TelemetryPanel.h"
 #include "components/AlertPanel.h"
 #include "components/LiveDataPanel.h"
@@ -35,28 +33,19 @@ static void glfw_error_callback(int error, const char *description) {
 }
 
 
-SerialHelper reader = SerialHelper(); // Replace "COM1" with your serial port name
 std::vector<Component *> components = std::vector<Component *>();
-bool shouldRead = true;
 
-void readSerial() {
-    while (shouldRead) {
-        reader.readAndPrintLines();
-    }
-}
 
-// Main code
 int main(int, char **) {
-    components.push_back(new ControlPanel("Control Panel", &reader, &components));
-    components.push_back(new TelemetryPanel("Telemetry Panel"));
-    components.push_back(new AlertPanel("Alert Panel"));
-    components.push_back(new LiveDataPanel("Live Data", &reader));
+    Dispatcher dispatcher;
+    components.push_back(new ControlPanel("Control Panel", &dispatcher, &components));
+    components.push_back(new TelemetryPanel("Telemetry Panel", &dispatcher));
+    components.push_back(new AlertPanel("Alert Panel", &dispatcher));
+    components.push_back(new LiveDataPanel("Live Data", &dispatcher));
 
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
-    std::thread t1(readSerial);
-    t1.detach();
     // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
@@ -245,7 +234,6 @@ int main(int, char **) {
 #ifdef __EMSCRIPTEN__
     EMSCRIPTEN_MAINLOOP_END;
 #endif
-    shouldRead = false;
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

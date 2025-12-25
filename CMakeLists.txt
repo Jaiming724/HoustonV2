@@ -8,7 +8,7 @@ set(PCH_HEADER "${CMAKE_SOURCE_DIR}/src/pch.h")
 include(FetchContent)
 
 add_executable(HoustonV2 src/main.cpp
-        src/SerialHelper.h
+        src/producer/SerialProducer.h
         src/Setting.h
         src/components/Component.h
         src/components/ControlPanel.cpp
@@ -19,7 +19,15 @@ add_executable(HoustonV2 src/main.cpp
         src/components/AlertPanel.cpp
         src/components/AlertPanel.h
         src/components/LiveDataPanel.cpp
-        src/components/LiveDataPanel.h)
+        src/components/LiveDataPanel.h
+        src/consumer/DataConsumer.h
+        src/consumer/QueueData.h
+        src/consumer/QueueData.cpp
+        src/Dispatcher.h
+        src/producer/DataProducer.h
+        src/dashboard/Dashboard.c
+        src/dashboard/COBS.c
+)
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 
 FetchContent_Declare(

@@ -1,5 +1,6 @@
 
 #include "ControlPanel.h"
+#include "../producer/SerialProducer.h"
 
 void ControlPanel::start() {
 
@@ -31,29 +32,29 @@ void ControlPanel::render() {
 
     }
 #endif
-    if (Setting::isEnable) {
+    if (isEnable) {
         if (ImGui::Button("Detach")) {
-            std::cout << "Detach" << std::endl;
-            Setting::isEnableMutex.lock();
-            Setting::isEnable = false;
-            Setting::isEnableMutex.unlock();
-            reader->close();
+            dataProducer->stop();
+
             for (auto &component: *pVector) {
                 component->stop();
             }
+            isEnable = false;
         }
     } else {
         if (ImGui::Button("Attach")) {
-            std::cout << "Attach" << std::endl;
+            if (dataProducer == nullptr) {
+                dataProducer = new SerialProducer();
+            }
+            dynamic_cast<SerialProducer *>(dataProducer)->setPort(inputText);
             for (auto &component: *pVector) {
                 component->start();
             }
-            Setting::portName = inputText;
-            reader->open(Setting::portName);
-            Setting::isEnableMutex.lock();
-            Setting::isEnable = true;
-            Setting::isEnableMutex.unlock();
+            isEnable = true;
         }
+    }
+    if (dataProducer != nullptr && dataProducer->status) {
+        dataProducer->produce(dispatcher);
     }
     ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
