@@ -22,8 +22,10 @@ public:
     void setPort(const std::string &port_name) {
         this->portName = port_name;
     }
+
     void init() override {
     }
+
     bool start() override {
         if (portName.empty()) {
             std::cerr << "SerialProducer: port name is not set." << std::endl;
@@ -65,7 +67,7 @@ public:
         stop();
     }
 
-    void produce(Dispatcher &dispatcher) override {
+    void produce(Dispatcher *dispatcher) override {
         std::deque<std::vector<uint8_t>> batch;
 
         {
@@ -75,7 +77,7 @@ public:
         }
 
         for (auto &packet: batch) {
-            dispatcher.dispatchData(std::move(packet));
+            dispatcher->dispatchData(std::move(packet));
         }
     }
 

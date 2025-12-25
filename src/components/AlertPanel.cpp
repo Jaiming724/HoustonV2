@@ -15,9 +15,9 @@ void AlertPanel::start() {
 }
 
 void AlertPanel::render() {
-    std::shared_ptr<DataConsumer> consumer = dispatcher->getHandler("AlertPanel");
+    DataConsumer *consumer = dispatcher->getHandler(ID_Alert);
     if (consumer) {
-        auto *queueData = dynamic_cast<QueueData *>(consumer.get());
+        auto *queueData = dynamic_cast<QueueData *>(consumer);
         while (!queueData->queue.empty()) {
             std::vector<uint8_t> &data = queueData->queue.front();
             alerts.emplace_back(data.begin(), data.end());

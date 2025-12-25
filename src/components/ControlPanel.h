@@ -9,12 +9,10 @@ class ControlPanel : public Component {
 private:
     std::vector<Component *> *pVector;
     bool isEnable = false;
-    Dispatcher dispatcher;
     DataProducer *dataProducer = nullptr;
 public:
 
-    ControlPanel(const char *name, Dispatcher *dispatcher, std::vector<Component *> *pVector) : Component(name,
-                                                                                                          dispatcher) {
+    ControlPanel(const char *name, Dispatcher *dispatcher, std::vector<Component *> *pVector) : Component(name,dispatcher) {
         this->pVector = pVector;
     }
 

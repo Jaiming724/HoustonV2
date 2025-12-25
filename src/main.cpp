@@ -6,6 +6,7 @@
 #include "components/TelemetryPanel.h"
 #include "components/AlertPanel.h"
 #include "components/LiveDataPanel.h"
+#include "dashboard/Dashboard.h"
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -13,6 +14,7 @@
 #endif
 
 #include "GLFW/glfw3.h" // Will drag system OpenGL headers
+#include "consumer/QueueData.h"
 #include <string>
 #include <iostream>
 
@@ -38,6 +40,8 @@ std::vector<Component *> components = std::vector<Component *>();
 
 int main(int, char **) {
     Dispatcher dispatcher;
+    DataConsumer* alertConsumer = new QueueData();
+    dispatcher.registerHandler(ID_Alert, alertConsumer);
     components.push_back(new ControlPanel("Control Panel", &dispatcher, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel", &dispatcher));
     components.push_back(new AlertPanel("Alert Panel", &dispatcher));
