@@ -7,11 +7,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-enum {
-    kAlertBufSize = 50,
+enum{
+    DashboardMagicNumber = 0xADEC
 };
 typedef enum {
     DASHBOARD_OK = 0,
+    DASHBOARD_ERR_INVALID_ARG,
     DASHBOARD_ERR_SEND_FAIL,
     DASHBOARD_ERR_NO_SPACE,
     DASHBOARD_ERR_COBS_FAILED,
@@ -44,6 +45,7 @@ typedef enum {
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 typedef struct {
+    uint16_t magicNumber;
     uint8_t packetType;
     uint8_t packetContentType;
     uint16_t payloadKeySize;
@@ -60,6 +62,7 @@ typedef struct {
 // Otherwise, assume GCC/Clang
 #else
 typedef struct __attribute__((packed)) {
+        uint16_t magicNumber;
         uint8_t packetType;
         uint8_t packetContentType;
         uint16_t payloadKeySize;
@@ -74,6 +77,9 @@ typedef struct __attribute__((packed)) {
 #endif
 
 uint32_t crc32(const char *s, uint32_t n);
+
+Dashboard_Status_t Dashboard_Init(Dashboard_t *dashboard, fpSendData sendData,
+                                  fpReadData readData, fpHasData hasData);
 
 Dashboard_Status_t Dashboard_Alert(Dashboard_t *dashboard, const char *str);
 

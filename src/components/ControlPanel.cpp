@@ -8,7 +8,7 @@ void ControlPanel::start() {
 
 void ControlPanel::render() {
     ImGui::Begin("Control Panel");
-    static char inputText[256] = "COM4"; // Buffer to store input text
+    static char inputText[32] = "COM5"; // Buffer to store input text
     ImGui::InputText("Port", inputText, IM_ARRAYSIZE(inputText));
     char portNumber[20];
 
@@ -50,6 +50,7 @@ void ControlPanel::render() {
             for (auto &component: *pVector) {
                 component->start();
             }
+            dataProducer->start();
             isEnable = true;
         }
     }

@@ -25,22 +25,24 @@ public:
             return;
         }
         DashboardPacketHeader_t header;
+        uint32_t decodeSize;
+        if(cobs_decode(data.data(), data.size(), &decodeSize) != COBS_DECODING_OK){
+            std::cerr << "COBS decoding failed" << std::endl;
+            return;
+        }
+
         std::memcpy(&header, data.data(), sizeof(DashboardPacketHeader_t));
-        if (crc32((char *) data.data(), data.size() - sizeof(uint32_t)) != header.checksum) {
+        if (header.magicNumber != DashboardMagicNumber) {
+            std::cerr << "Invalid magic number" << std::endl;
+            return;
+        }
+        if (crc32((char *) data.data(), sizeof(DashboardPacketHeader_t) - sizeof(uint32_t)) != header.checksum) {
             std::cerr << "Checksum mismatch" << std::endl;
             return;
         }
         uint32_t payloadSize = header.payloadKeySize + header.payloadValueSize;
         DashboardPacketTail_t tail;
-        std::memcpy(&tail,
-                    data.data() + sizeof(DashboardPacketHeader_t) + payloadSize, sizeof(DashboardPacketTail_t));
-
-        uint32_t decodeSize;
-        if (cobs_decode(&data[sizeof(DashboardPacketHeader_t)], data.size() - sizeof(DashboardPacketHeader_t),
-                        &decodeSize) != COBS_DECODING_OK) {
-            std::cerr << "COBS decoding failed" << std::endl;
-            return;
-        }
+        std::memcpy(&tail,data.data() + sizeof(DashboardPacketHeader_t) + payloadSize, sizeof(DashboardPacketTail_t));
         if (crc32((char *) &data[sizeof(DashboardPacketHeader_t)], payloadSize) != tail.payloadChecksum) {
             std::cerr << "Payload checksum mismatch" << std::endl;
             return;

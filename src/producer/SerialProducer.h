@@ -22,7 +22,8 @@ public:
     void setPort(const std::string &port_name) {
         this->portName = port_name;
     }
-
+    void init() override {
+    }
     bool start() override {
         if (portName.empty()) {
             std::cerr << "SerialProducer: port name is not set." << std::endl;
@@ -60,11 +61,11 @@ public:
         status = false;
     }
 
-    ~SerialProducer() {
+    ~SerialProducer() override {
         stop();
     }
 
-    void produce(Dispatcher &dispatcher) {
+    void produce(Dispatcher &dispatcher) override {
         std::deque<std::vector<uint8_t>> batch;
 
         {
@@ -73,8 +74,8 @@ public:
             batch.swap(rx_queue_);
         }
 
-        for (const auto &packet: batch) {
-            dispatcher.dispatchData(packet);
+        for (auto &packet: batch) {
+            dispatcher.dispatchData(std::move(packet));
         }
     }
 
@@ -115,7 +116,10 @@ private:
                                        if (std::getline(is, s, '\0')) {
                                            if (!s.empty()) {
                                                std::vector<uint8_t> vec(s.begin(), s.end());
+                                               vec.push_back(0x00);
+                                               //std::string s(vec.begin(), vec.end());
 
+                                               //std::cout << s << std::endl;
                                                std::lock_guard<std::mutex> lock(rx_mutex_);
                                                if (rx_queue_.size() < RX_CAPACITY) {
                                                    rx_queue_.push_back(std::move(vec));

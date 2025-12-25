@@ -8,20 +8,19 @@ public:
     const char *name;
     bool status = false;
 
-    DataProducer(const char *str) : name(str) {
+    explicit DataProducer(const char *str) : name(str) {
 
     }
 
     virtual ~DataProducer() = default;
 
-    virtual void init() {};
+    virtual void init()=0;
 
-    virtual bool start() {
-        return false;
-    };
+    virtual bool start()=0;
+    virtual void produce(Dispatcher &dispatcher)=0;
 
-    virtual void produce(Dispatcher &dispatcher) {};
-
-    virtual void stop() {};
+    virtual void stop()=0;
 
 };
+
+
