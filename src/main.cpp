@@ -1,21 +1,25 @@
 
 
 #include "pch.h"
+
+#include <string>
+#include "GLFW/glfw3.h" // Will drag system OpenGL headers
+
 #include "components/Component.h"
 #include "components/ControlPanel.h"
 #include "components/TelemetryPanel.h"
 #include "components/AlertPanel.h"
 #include "components/LiveDataPanel.h"
 #include "dashboard/Dashboard.h"
+#include "consumer/TelemetryConsumer.h"
+#include "consumer/AlertConsumer.h"
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
 #endif
 
-#include "GLFW/glfw3.h" // Will drag system OpenGL headers
-#include "consumer/QueueData.h"
-#include <string>
+
 #include <iostream>
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
@@ -40,8 +44,9 @@ std::vector<Component *> components = std::vector<Component *>();
 
 int main(int, char **) {
     Dispatcher dispatcher;
-    DataConsumer* alertConsumer = new QueueData();
-    dispatcher.registerHandler(ID_Alert, alertConsumer);
+
+    dispatcher.registerHandler(ID_Alert, new AlertConsumer());
+    dispatcher.registerHandler(ID_Telemetry, new TelemetryConsumer());
     components.push_back(new ControlPanel("Control Panel", &dispatcher, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel", &dispatcher));
     components.push_back(new AlertPanel("Alert Panel", &dispatcher));

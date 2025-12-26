@@ -27,6 +27,9 @@ add_executable(HoustonV2 src/main.cpp
         src/producer/DataProducer.h
         src/dashboard/Dashboard.c
         src/dashboard/COBS.c
+        src/consumer/TypedConsumer.h
+        src/consumer/AlertConsumer.h
+        src/consumer/TelemetryConsumer.h
 )
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 

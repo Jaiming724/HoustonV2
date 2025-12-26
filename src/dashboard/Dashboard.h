@@ -7,7 +7,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-enum{
+enum {
     DashboardMagicNumber = 0xADEC
 };
 typedef enum {
@@ -36,6 +36,7 @@ typedef enum {
 } PacketID_t;
 
 typedef enum {
+    TYPE_UINT32 = 0x00,
     TYPE_INT32 = 0x01,
     TYPE_FLOAT = 0x02,
     TYPE_BOOL = 0x03,
@@ -62,21 +63,21 @@ typedef struct {
 // Otherwise, assume GCC/Clang
 #else
 typedef struct __attribute__((packed)) {
-        uint16_t magicNumber;
-        uint8_t packetType;
-        uint8_t packetContentType;
-        uint16_t payloadKeySize;
-        uint16_t payloadValueSize;
-        uint32_t timestamp;
-        uint32_t checksum;
-    } DashboardPacketHeader_t;
+    uint16_t magicNumber;
+    uint8_t packetType;
+    uint8_t packetContentType;
+    uint16_t payloadKeySize;
+    uint16_t payloadValueSize;
+    uint32_t timestamp;
+    uint32_t checksum;
+} DashboardPacketHeader_t;
 
-    typedef struct __attribute__((packed)) {
-        uint32_t payloadChecksum;
-    } DashboardPacketTail_t;
+typedef struct __attribute__((packed)) {
+    uint32_t payloadChecksum;
+} DashboardPacketTail_t;
 #endif
 
-uint32_t crc32(const char *s, uint32_t n);
+uint32_t crc32(const char *s, uint32_t n, uint32_t crc);
 
 Dashboard_Status_t Dashboard_Init(Dashboard_t *dashboard, fpSendData sendData,
                                   fpReadData readData, fpHasData hasData);

@@ -1,10 +1,5 @@
-//
-// Created by Scratch on 11/20/2023.
-//
-
 #include "AlertPanel.h"
-#include "../consumer/QueueData.h"
-
+#include "../consumer/TypedConsumer.h"
 
 AlertPanel::~AlertPanel() {
 
@@ -17,11 +12,10 @@ void AlertPanel::start() {
 void AlertPanel::render() {
     DataConsumer *consumer = dispatcher->getHandler(ID_Alert);
     if (consumer) {
-        auto *queueData = dynamic_cast<QueueData *>(consumer);
-        while (!queueData->queue.empty()) {
-            std::vector<uint8_t> &data = queueData->queue.front();
-            alerts.emplace_back(data.begin(), data.end());
-            queueData->queue.pop();
+        auto *alertConsumer = static_cast<TypedConsumer<std::string> *>(consumer);
+        while (!alertConsumer->isEmpty()) {
+            std::optional<std::string> data = alertConsumer->pop();
+            alerts.push_back(std::move(*data));
         }
     }
     ImGui::Begin("Alerts");
