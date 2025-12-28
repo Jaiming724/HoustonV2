@@ -81,15 +81,18 @@ public:
         }
     }
 
-    void send_data(const std::vector<uint8_t> &data) {
-        asio::post(io_context_, [this, data]() {
-            bool write_in_progress = !tx_queue_.empty();
-            tx_queue_.push_back(data);
+    void send_data(Dispatcher *dispatcher) override {
+        for (const auto &data: dispatcher->getTxData()) {
+            asio::post(io_context_, [this, data]() {
+                bool write_in_progress = !tx_queue_.empty();
+                tx_queue_.push_back(data);
 
-            if (!write_in_progress) {
-                start_write();
-            }
-        });
+                if (!write_in_progress) {
+                    start_write();
+                }
+            });
+        }
+        dispatcher->getTxData().clear();
     }
 
 private:

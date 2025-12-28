@@ -14,6 +14,7 @@
 class Dispatcher {
 private:
     std::unordered_map<uint8_t, DataConsumer *> handlerMap;
+    std::vector<std::vector<uint8_t>> txData;
 public:
     void registerHandler(uint8_t id, DataConsumer *handler) {
         handlerMap[id] = handler;
@@ -55,22 +56,18 @@ public:
             std::cerr << "Payload checksum mismatch" << std::endl;
             return;
         }
-        std::string key((char *) &data[sizeof(DashboardPacketHeader_t)], payloadSize);
-        std::cout << "Dispatching data with key: " << key << std::endl;
+        //std::string key((char *) &data[sizeof(DashboardPacketHeader_t)], payloadSize);
+       // std::cout << "Dispatching data with key: " << key << std::endl;
         getHandler(header.packetType)->consume(std::move(data));
 
     }
 
-    void debugMap() {
-        for (const auto &[id, handler]: handlerMap) {
-            std::cout << "ID: " << (int) id << " -> ";
-            if (handler == nullptr) {
-                std::cout << "NULL (Danger!)" << std::endl;
-            } else {
-                std::cout << "Valid Object at " << handler << std::endl;
-            }
-        }
+    std::vector<std::vector<uint8_t>> &getTxData() {
+        return txData;
+    }
 
+    void sendData(std::vector<uint8_t> data) {
+        txData.push_back(std::move(data));
     }
 
     DataConsumer *getHandler(uint8_t key) {

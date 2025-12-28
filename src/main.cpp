@@ -13,6 +13,7 @@
 #include "dashboard/Dashboard.h"
 #include "consumer/TelemetryConsumer.h"
 #include "consumer/AlertConsumer.h"
+#include "consumer/LiveDataConsumer.h"
 
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -47,6 +48,7 @@ int main(int, char **) {
 
     dispatcher.registerHandler(ID_Alert, new AlertConsumer());
     dispatcher.registerHandler(ID_Telemetry, new TelemetryConsumer());
+    dispatcher.registerHandler(ID_Response_LiveData, new LiveDataConsumer());
     components.push_back(new ControlPanel("Control Panel", &dispatcher, &components));
     components.push_back(new TelemetryPanel("Telemetry Panel", &dispatcher));
     components.push_back(new AlertPanel("Alert Panel", &dispatcher));

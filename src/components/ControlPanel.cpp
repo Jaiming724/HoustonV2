@@ -56,6 +56,7 @@ void ControlPanel::render() {
     }
     if (dataProducer != nullptr && dataProducer->status) {
         dataProducer->produce(dispatcher);
+        dataProducer->send_data(dispatcher);
     }
     ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();

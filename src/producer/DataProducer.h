@@ -14,12 +14,15 @@ public:
 
     virtual ~DataProducer() = default;
 
-    virtual void init()=0;
+    virtual void init() = 0;
 
-    virtual bool start()=0;
-    virtual void produce(Dispatcher*dispatcher)=0;
+    virtual bool start() = 0;
 
-    virtual void stop()=0;
+    virtual void produce(Dispatcher *dispatcher) = 0;
+
+    virtual void send_data(Dispatcher *dispatcher) = 0;
+
+    virtual void stop() = 0;
 
 };
 

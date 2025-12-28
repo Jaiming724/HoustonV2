@@ -17,6 +17,12 @@ typedef enum {
     DASHBOARD_ERR_NO_SPACE,
     DASHBOARD_ERR_COBS_FAILED,
 } Dashboard_Status_t;
+typedef enum {
+    Dashboard_Packet_WAITING = 0,
+    Dashboard_Packet_HEADER_RECEIVED,
+    Dashboard_Packet_RECEIVING_PAYLOAD,
+    Dashboard_Packet_TAIL_RECEIVED,
+} Dashboard_Packet_Status_t;
 
 typedef bool (*fpSendData)(const char *, uint32_t);
 
@@ -24,15 +30,13 @@ typedef uint32_t (*fpReadData)(char *buf, uint32_t size);
 
 typedef bool (*fpHasData)(uint32_t *size);
 
-typedef struct Dashboard {
-    fpSendData sendData;
-    fpReadData readData;
-    fpHasData hasData;
-} Dashboard_t;
+
 typedef enum {
     ID_Telemetry = 0x30,
     ID_Alert = 0x31,
     ID_Modify = 0x32,
+    ID_Request_LiveData = 0x33,
+    ID_Response_LiveData = 0x34,
 } PacketID_t;
 
 typedef enum {
@@ -54,7 +58,21 @@ typedef struct {
     uint32_t timestamp;
     uint32_t checksum;
 } DashboardPacketHeader_t;
-
+typedef struct {
+    uint16_t packetID;
+    union {
+        uint32_t uint32Value;
+        int32_t int32Value;
+        float floatValue;
+        bool boolValue;
+    };
+    union {
+        float *floatPtr;
+        uint32_t *uint32Ptr;
+        int32_t *int32Ptr;
+        bool *boolPtr;
+    };
+} LiveDataPacket_t;
 typedef struct {
     uint32_t payloadChecksum;
 } DashboardPacketTail_t;
@@ -71,11 +89,35 @@ typedef struct __attribute__((packed)) {
     uint32_t timestamp;
     uint32_t checksum;
 } DashboardPacketHeader_t;
-
+typedef struct __attribute__((packed)) {
+    uint16_t packetID;
+    union {
+        uint32_t uint32Value;
+        int32_t int32Value;
+        float floatValue;
+        bool boolValue;
+    };
+    union {
+        float *floatPtr;
+        uint32_t *uint32Ptr;
+        int32_t *int32Ptr;
+        bool *boolPtr;
+    };
+} LiveDataPacket_t;
 typedef struct __attribute__((packed)) {
     uint32_t payloadChecksum;
 } DashboardPacketTail_t;
 #endif
+
+typedef struct Dashboard {
+    uint16_t liveDataCount;
+    fpSendData sendData;
+    fpReadData readData;
+    fpHasData hasData;
+    Dashboard_Packet_Status_t packetStatus;
+    DashboardPacketHeader_t currentPacketHeader;
+
+} Dashboard_t;
 
 uint32_t crc32(const char *s, uint32_t n, uint32_t crc);
 
@@ -83,6 +125,16 @@ Dashboard_Status_t Dashboard_Init(Dashboard_t *dashboard, fpSendData sendData,
                                   fpReadData readData, fpHasData hasData);
 
 Dashboard_Status_t Dashboard_Alert(Dashboard_t *dashboard, const char *str);
+
+Dashboard_Status_t Dashboard_Telemetry_Float(Dashboard_t *dashboard, const char *key, float value);
+
+Dashboard_Status_t Dashboard_Telemetry_Int32(Dashboard_t *dashboard, const char *key, int32_t value);
+
+Dashboard_Status_t Dashboard_Telemetry_Uint32(Dashboard_t *dashboard, const char *key, uint32_t value);
+
+Dashboard_Status_t Dashboard_Telemetry_Str(Dashboard_t *dashboard, const char *key, const char *value);
+
+Dashboard_Status_t Dashboard_Update(Dashboard_t *dashboard);
 
 #ifdef __cplusplus
 }

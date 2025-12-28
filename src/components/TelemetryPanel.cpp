@@ -1,5 +1,4 @@
 #include "TelemetryPanel.h"
-#include "../consumer/QueueData.h"
 #include "../consumer/TelemetryConsumer.h"
 
 void TelemetryPanel::start() {

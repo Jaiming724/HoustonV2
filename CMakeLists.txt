@@ -21,8 +21,6 @@ add_executable(HoustonV2 src/main.cpp
         src/components/LiveDataPanel.cpp
         src/components/LiveDataPanel.h
         src/consumer/DataConsumer.h
-        src/consumer/QueueData.h
-        src/consumer/QueueData.cpp
         src/Dispatcher.h
         src/producer/DataProducer.h
         src/dashboard/Dashboard.c
@@ -30,6 +28,7 @@ add_executable(HoustonV2 src/main.cpp
         src/consumer/TypedConsumer.h
         src/consumer/AlertConsumer.h
         src/consumer/TelemetryConsumer.h
+        src/consumer/LiveDataConsumer.h
 )
 target_precompile_headers(HoustonV2 PRIVATE ${PCH_HEADER})
 

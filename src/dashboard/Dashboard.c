@@ -4,9 +4,14 @@
 enum {
     kAlertBufSize = 50,
     kAlertBufCOBSize = kAlertBufSize + (kAlertBufSize / 254) + 1,
+    kLiveDataBufSize = 5,
 };
+
+
 static char alertBuffer[kAlertBufSize] = {0};
 static char alertBufferCOBS[kAlertBufCOBSize] = {0};
+static LiveDataPacket_t liveDataBuffer[kLiveDataBufSize] = {0};
+static char rxBuffer[kAlertBufCOBSize] = {0};
 
 static void
 craftTelemetryPacket(DashboardPacketHeader_t *packetHeader, uint8_t contentType, uint16_t keyLen, uint16_t valueSize) {
@@ -45,6 +50,42 @@ copyData(Dashboard_t *dashboard, DashboardPacketHeader_t *packetHeader, uint8_t 
     return DASHBOARD_OK;
 }
 
+static Dashboard_Status_t processPacket(Dashboard_t *dashboard) {
+    DashboardPacketHeader_t *header = (DashboardPacketHeader_t *) rxBuffer;
+    if (header->packetType == ID_Request_LiveData) {
+        Dashboard_Alert(dashboard, "Live Data Requested");
+        DashboardPacketHeader_t responseHeader;
+        responseHeader.magicNumber = DashboardMagicNumber;
+        responseHeader.packetType = ID_Response_LiveData;
+        responseHeader.packetContentType = TYPE_UINT32; // Not really used
+        responseHeader.payloadKeySize = dashboard->liveDataCount;
+        responseHeader.payloadValueSize = dashboard->liveDataCount * sizeof(LiveDataPacket_t);
+        responseHeader.timestamp = 0; // Could add timestamping if needed
+        responseHeader.checksum = crc32((char *) &responseHeader,
+                                        sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0);
+        uint32_t writeSize = sizeof(DashboardPacketHeader_t);
+        memcpy(&alertBuffer[0], &responseHeader, sizeof(DashboardPacketHeader_t));
+        for (uint32_t i = 0; i < dashboard->liveDataCount; i++) {
+            memcpy(&alertBuffer[writeSize], &liveDataBuffer[i], sizeof(LiveDataPacket_t));
+            writeSize += sizeof(LiveDataPacket_t);
+        }
+        DashboardPacketTail_t tail;
+        tail.payloadChecksum = crc32((char *) alertBuffer + sizeof(DashboardPacketHeader_t),
+                                     dashboard->liveDataCount * sizeof(LiveDataPacket_t), 0);
+        memcpy(&alertBuffer[writeSize], &tail, sizeof(DashboardPacketTail_t));
+        writeSize += sizeof(DashboardPacketTail_t);
+        uint32_t encodeSize = kAlertBufCOBSize;
+        if (cobs_encode((uint8_t *) alertBuffer, writeSize, (uint8_t *) alertBufferCOBS, &encodeSize) !=
+            COBS_ENCODING_OK) {
+            return DASHBOARD_ERR_COBS_FAILED;
+        }
+        if (!dashboard->sendData(alertBufferCOBS, encodeSize)) {
+            return DASHBOARD_ERR_SEND_FAIL;
+        }
+    }
+    return DASHBOARD_OK;
+}
+
 Dashboard_Status_t Dashboard_Init(Dashboard_t *dashboard,
                                   fpSendData sendData,
                                   fpReadData readData,
@@ -55,6 +96,26 @@ Dashboard_Status_t Dashboard_Init(Dashboard_t *dashboard,
     dashboard->sendData = sendData;
     dashboard->readData = readData;
     dashboard->hasData = hasData;
+    dashboard->liveDataCount = 0;
+    dashboard->packetStatus = Dashboard_Packet_WAITING;
+    return DASHBOARD_OK;
+}
+
+Dashboard_Status_t
+Dashboard_Register_LiveData(Dashboard_t *dashboard, uint16_t key, void *data, ValueType_t type) {
+    if (dashboard == NULL || data == NULL || dashboard->liveDataCount >= kLiveDataBufSize) {
+        return DASHBOARD_ERR_INVALID_ARG;
+    }
+    liveDataBuffer[dashboard->liveDataCount].packetID = key;
+    memcpy(&liveDataBuffer[dashboard->liveDataCount].uint32Ptr, &data, sizeof(void *));
+    if (type == TYPE_BOOL) {
+        liveDataBuffer[dashboard->liveDataCount].boolValue = *(bool *) data;
+    } else {
+        memcpy(&liveDataBuffer[dashboard->liveDataCount].uint32Value, data,
+               (type == TYPE_FLOAT) ? sizeof(float) : sizeof(uint32_t));
+    }
+    dashboard->liveDataCount++;
+
     return DASHBOARD_OK;
 }
 
@@ -99,7 +160,7 @@ Dashboard_Status_t Dashboard_Telemetry_Float(Dashboard_t *dashboard, const char 
     uint16_t keyLen = strlen(key);
     uint16_t valueLen = sizeof(float);
     DashboardPacketHeader_t header;
-    craftTelemetryPacket(&header, TYPE_UINT32, keyLen, valueLen);
+    craftTelemetryPacket(&header, TYPE_FLOAT, keyLen, valueLen);
     return copyData(dashboard, &header, (uint8_t *) key, (uint8_t *) &value, keyLen, valueLen);
 }
 
@@ -135,6 +196,55 @@ Dashboard_Status_t Dashboard_Alert(Dashboard_t *dashboard, const char *str) {
     return DASHBOARD_OK;
 }
 
+Dashboard_Status_t Dashboard_Update(Dashboard_t *dashboard) {
+    if (dashboard == NULL) {
+        return DASHBOARD_ERR_INVALID_ARG;
+    }
+    uint32_t count;
+    bool status = dashboard->hasData(&count);
+    DashboardPacketHeader_t *header = (DashboardPacketHeader_t *) rxBuffer;
+    if (dashboard->packetStatus == Dashboard_Packet_WAITING && status && count > sizeof(DashboardPacketHeader_t)) {
+        dashboard->readData(rxBuffer, sizeof(DashboardPacketHeader_t));
+        if (crc32((char *) header, sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0) == header->checksum) {
+            uint32_t totalPacketSize = sizeof(DashboardPacketHeader_t) +
+                                       header->payloadKeySize + header->payloadValueSize +
+                                       sizeof(DashboardPacketTail_t);
+            if (totalPacketSize < kAlertBufCOBSize) {
+                Dashboard_Alert(dashboard, "Received packet header");
+
+                dashboard->packetStatus = Dashboard_Packet_HEADER_RECEIVED;
+            } else {
+                Dashboard_Alert(dashboard, "Received packet too large");
+            }
+
+        }
+    }
+    if (dashboard->packetStatus == Dashboard_Packet_HEADER_RECEIVED) {
+        status = dashboard->hasData(&count);
+        uint32_t expectedSize = header->payloadKeySize + header->payloadValueSize + sizeof(DashboardPacketTail_t);
+        if (status && count >= expectedSize) {
+            dashboard->readData(&rxBuffer[sizeof(DashboardPacketHeader_t)], expectedSize);
+            uint32_t expectedPayloadSize = header->payloadKeySize + header->payloadValueSize;
+            DashboardPacketTail_t *tail = (DashboardPacketTail_t *) (rxBuffer + sizeof(DashboardPacketHeader_t) +
+                                                                     expectedPayloadSize);
+            uint32_t payloadChecksum = crc32(rxBuffer + sizeof(DashboardPacketHeader_t), header->payloadKeySize, 0);
+            payloadChecksum = crc32(rxBuffer + sizeof(DashboardPacketHeader_t) + header->payloadKeySize,
+                                    header->payloadValueSize, payloadChecksum);
+
+            dashboard->packetStatus = Dashboard_Packet_WAITING;
+            Dashboard_Telemetry_Uint32(dashboard, "CalculuatedCRC", payloadChecksum);
+            Dashboard_Telemetry_Uint32(dashboard, "ReceivedCRC", tail->payloadChecksum);
+            if (payloadChecksum == tail->payloadChecksum) {
+                Dashboard_Alert(dashboard, "Processing packet");
+                return processPacket(dashboard);
+            } else {
+                Dashboard_Alert(dashboard, "Payload checksum mismatch");
+            }
+
+        }
+    }
+    return DASHBOARD_OK;
+}
 
 uint32_t crc32(const char *s, uint32_t n, uint32_t crc) {
 
