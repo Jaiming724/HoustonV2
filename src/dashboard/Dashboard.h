@@ -58,7 +58,7 @@ typedef struct {
     uint32_t timestamp;
     uint32_t checksum;
 } DashboardPacketHeader_t;
-typedef struct __attribute__((packed)) {
+typedef struct {
     uint16_t packetID;
     uint16_t valueType;
     union {
