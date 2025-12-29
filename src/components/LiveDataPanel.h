@@ -7,6 +7,8 @@
 class LiveDataPanel : public Component {
 private:
     std::map<uint16_t, LiveDataPacket_t> liveDataMap;
+    std::map<uint16_t, int32_t*> intMap;
+    std::map<uint16_t, float*> floatMap;
 
 
 public:
