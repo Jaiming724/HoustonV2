@@ -12,13 +12,12 @@ protected:
         }
         DashboardPacketHeader_t header;
         std::memcpy(&header, data.data(), sizeof(DashboardPacketHeader_t));
-        for (int i = 0; i < header.payloadKeySize; i++) {
+        for (int i = 0; i < header.payloadValueSize / sizeof(LiveDataPacket_t); i++) {
             LiveDataPacket_t packet;
             size_t offset = sizeof(DashboardPacketHeader_t) + (i * sizeof(LiveDataPacket_t));
-            if (offset + sizeof(LiveDataPacket_t) <= data.size()) {
-                std::memcpy(&packet, data.data() + offset, sizeof(LiveDataPacket_t));
-                packets.push_back(packet);
-            }
+            std::memcpy(&packet, data.data() + offset, sizeof(LiveDataPacket_t));
+            packets.push_back(packet);
+
         }
         return packets;
     }

@@ -60,6 +60,7 @@ public:
         if (background_thread_.joinable()) {
             background_thread_.join();
         }
+        serial_.close();
         status = false;
     }
 

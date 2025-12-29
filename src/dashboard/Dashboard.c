@@ -2,7 +2,7 @@
 #include "COBS.h"
 
 enum {
-    kAlertBufSize = 50,
+    kAlertBufSize = 100,
     kAlertBufCOBSize = kAlertBufSize + (kAlertBufSize / 254) + 1,
     kLiveDataBufSize = 5,
 };
@@ -12,6 +12,7 @@ static char alertBuffer[kAlertBufSize] = {0};
 static char alertBufferCOBS[kAlertBufCOBSize] = {0};
 static LiveDataPacket_t liveDataBuffer[kLiveDataBufSize] = {0};
 static char rxBuffer[kAlertBufCOBSize] = {0};
+static void *liveDataPtr[kLiveDataBufSize] = {0};
 
 static void
 craftTelemetryPacket(DashboardPacketHeader_t *packetHeader, uint8_t contentType, uint16_t keyLen, uint16_t valueSize) {
@@ -58,7 +59,7 @@ static Dashboard_Status_t processPacket(Dashboard_t *dashboard) {
         responseHeader.magicNumber = DashboardMagicNumber;
         responseHeader.packetType = ID_Response_LiveData;
         responseHeader.packetContentType = TYPE_UINT32; // Not really used
-        responseHeader.payloadKeySize = dashboard->liveDataCount;
+        responseHeader.payloadKeySize = 0;
         responseHeader.payloadValueSize = dashboard->liveDataCount * sizeof(LiveDataPacket_t);
         responseHeader.timestamp = 0; // Could add timestamping if needed
         responseHeader.checksum = crc32((char *) &responseHeader,
@@ -66,7 +67,7 @@ static Dashboard_Status_t processPacket(Dashboard_t *dashboard) {
         uint32_t writeSize = sizeof(DashboardPacketHeader_t);
         memcpy(&alertBuffer[0], &responseHeader, sizeof(DashboardPacketHeader_t));
         for (uint32_t i = 0; i < dashboard->liveDataCount; i++) {
-            memcpy(&alertBuffer[writeSize], &liveDataBuffer[i], sizeof(LiveDataPacket_t));
+            memcpy(&alertBuffer[writeSize], (char *) &liveDataBuffer[i], sizeof(LiveDataPacket_t));
             writeSize += sizeof(LiveDataPacket_t);
         }
         DashboardPacketTail_t tail;
@@ -77,11 +78,14 @@ static Dashboard_Status_t processPacket(Dashboard_t *dashboard) {
         uint32_t encodeSize = kAlertBufCOBSize;
         if (cobs_encode((uint8_t *) alertBuffer, writeSize, (uint8_t *) alertBufferCOBS, &encodeSize) !=
             COBS_ENCODING_OK) {
+            Dashboard_Alert(dashboard, "Cobs encode fail");
+
             return DASHBOARD_ERR_COBS_FAILED;
         }
         if (!dashboard->sendData(alertBufferCOBS, encodeSize)) {
             return DASHBOARD_ERR_SEND_FAIL;
         }
+        Dashboard_Alert(dashboard, "Live Data Sent");
     }
     return DASHBOARD_OK;
 }
@@ -107,13 +111,9 @@ Dashboard_Register_LiveData(Dashboard_t *dashboard, uint16_t key, void *data, Va
         return DASHBOARD_ERR_INVALID_ARG;
     }
     liveDataBuffer[dashboard->liveDataCount].packetID = key;
-    memcpy(&liveDataBuffer[dashboard->liveDataCount].uint32Ptr, &data, sizeof(void *));
-    if (type == TYPE_BOOL) {
-        liveDataBuffer[dashboard->liveDataCount].boolValue = *(bool *) data;
-    } else {
-        memcpy(&liveDataBuffer[dashboard->liveDataCount].uint32Value, data,
-               (type == TYPE_FLOAT) ? sizeof(float) : sizeof(uint32_t));
-    }
+    liveDataBuffer[dashboard->liveDataCount].valueType = type;
+    liveDataPtr[dashboard->liveDataCount] = data;
+
     dashboard->liveDataCount++;
 
     return DASHBOARD_OK;

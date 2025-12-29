@@ -25,10 +25,10 @@ void LiveDataPanel::render() {
     }
     ImGui::Begin("Live Data");
     for (const auto &it: liveDataMap) {
-
-        if (ImGui::InputInt(std::to_string(it.first).c_str(), nullptr, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
-
-        }
+        ImGui::Text("ID %d:", it.first);
+//        if (ImGui::InputInt(std::to_string(it.first).c_str(), nullptr, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+//
+//        }
     }
     if (ImGui::Button("Refresh")) {
         liveDataMap.clear();

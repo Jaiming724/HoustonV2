@@ -60,17 +60,12 @@ typedef struct {
 } DashboardPacketHeader_t;
 typedef struct {
     uint16_t packetID;
+    uint16_t valueType;
     union {
         uint32_t uint32Value;
         int32_t int32Value;
         float floatValue;
         bool boolValue;
-    };
-    union {
-        float *floatPtr;
-        uint32_t *uint32Ptr;
-        int32_t *int32Ptr;
-        bool *boolPtr;
     };
 } LiveDataPacket_t;
 typedef struct {
@@ -91,17 +86,12 @@ typedef struct __attribute__((packed)) {
 } DashboardPacketHeader_t;
 typedef struct __attribute__((packed)) {
     uint16_t packetID;
+    uint16_t valueType;
     union {
         uint32_t uint32Value;
         int32_t int32Value;
         float floatValue;
         bool boolValue;
-    };
-    union {
-        float *floatPtr;
-        uint32_t *uint32Ptr;
-        int32_t *int32Ptr;
-        bool *boolPtr;
     };
 } LiveDataPacket_t;
 typedef struct __attribute__((packed)) {
@@ -133,6 +123,8 @@ Dashboard_Status_t Dashboard_Telemetry_Int32(Dashboard_t *dashboard, const char 
 Dashboard_Status_t Dashboard_Telemetry_Uint32(Dashboard_t *dashboard, const char *key, uint32_t value);
 
 Dashboard_Status_t Dashboard_Telemetry_Str(Dashboard_t *dashboard, const char *key, const char *value);
+
+Dashboard_Status_t Dashboard_Register_LiveData(Dashboard_t *dashboard, uint16_t key, void *data, ValueType_t type);
 
 Dashboard_Status_t Dashboard_Update(Dashboard_t *dashboard);
 

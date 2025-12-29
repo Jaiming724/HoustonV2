@@ -35,7 +35,8 @@ void ControlPanel::render() {
     if (isEnable) {
         if (ImGui::Button("Detach")) {
             dataProducer->stop();
-
+            delete dataProducer;
+            dataProducer = nullptr;
             for (auto &component: *pVector) {
                 component->stop();
             }
