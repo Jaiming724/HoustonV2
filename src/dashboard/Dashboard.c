@@ -14,10 +14,12 @@ static LiveDataPacket_t liveDataBuffer[kLiveDataBufSize] = {0};
 static char rxBuffer[kAlertBufCOBSize] = {0};
 static void *liveDataPtr[kLiveDataBufSize] = {0};
 
-static void
-craftTelemetryPacket(DashboardPacketHeader_t *packetHeader, uint8_t contentType, uint16_t keyLen, uint16_t valueSize) {
+void
+craftDashboardHeaderPacket(DashboardPacketHeader_t *packetHeader, uint8_t packetType, uint8_t contentType,
+                           uint16_t keyLen,
+                           uint16_t valueSize) {
     packetHeader->magicNumber = DashboardMagicNumber;
-    packetHeader->packetType = ID_Telemetry;
+    packetHeader->packetType = packetType;
     packetHeader->packetContentType = contentType;
     packetHeader->payloadKeySize = keyLen;
     packetHeader->payloadValueSize = valueSize;
@@ -56,17 +58,20 @@ static Dashboard_Status_t processPacket(Dashboard_t *dashboard) {
     if (header->packetType == ID_Request_LiveData) {
         Dashboard_Alert(dashboard, "Live Data Requested");
         DashboardPacketHeader_t responseHeader;
-        responseHeader.magicNumber = DashboardMagicNumber;
-        responseHeader.packetType = ID_Response_LiveData;
-        responseHeader.packetContentType = TYPE_UINT32; // Not really used
-        responseHeader.payloadKeySize = 0;
-        responseHeader.payloadValueSize = dashboard->liveDataCount * sizeof(LiveDataPacket_t);
-        responseHeader.timestamp = 0; // Could add timestamping if needed
-        responseHeader.checksum = crc32((char *) &responseHeader,
-                                        sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0);
+        craftDashboardHeaderPacket(&responseHeader, ID_Response_LiveData, TYPE_UINT32, 0,
+                                   dashboard->liveDataCount * sizeof(LiveDataPacket_t));
         uint32_t writeSize = sizeof(DashboardPacketHeader_t);
         memcpy(&alertBuffer[0], &responseHeader, sizeof(DashboardPacketHeader_t));
         for (uint32_t i = 0; i < dashboard->liveDataCount; i++) {
+            if (liveDataBuffer[i].valueType == TYPE_FLOAT) {
+                liveDataBuffer[i].floatValue = *((float *) liveDataPtr[i]);
+            } else if (liveDataBuffer[i].valueType == TYPE_BOOL) {
+                liveDataBuffer[i].boolValue = *((bool *) liveDataPtr[i]);
+            } else if (liveDataBuffer[i].valueType == TYPE_INT32) {
+                liveDataBuffer[i].int32Value = *((int32_t *) liveDataPtr[i]);
+            } else if (liveDataBuffer[i].valueType == TYPE_UINT32) {
+                liveDataBuffer[i].uint32Value = *((uint32_t *) liveDataPtr[i]);
+            }
             memcpy(&alertBuffer[writeSize], (char *) &liveDataBuffer[i], sizeof(LiveDataPacket_t));
             writeSize += sizeof(LiveDataPacket_t);
         }
@@ -144,7 +149,7 @@ Dashboard_Status_t Dashboard_Telemetry_Str(Dashboard_t *dashboard, const char *k
     uint16_t keyLen = strlen(key);
     uint16_t valueLen = strlen(value);
     DashboardPacketHeader_t header;
-    craftTelemetryPacket(&header, TYPE_STRING, keyLen, valueLen);
+    craftDashboardHeaderPacket(&header, ID_Telemetry, TYPE_STRING, keyLen, valueLen);
     return copyData(dashboard, &header, (uint8_t *) key, (uint8_t *) value, keyLen, valueLen);
 
 }
@@ -156,7 +161,7 @@ Dashboard_Status_t Dashboard_Telemetry_Int32(Dashboard_t *dashboard, const char 
     uint16_t keyLen = strlen(key);
     uint16_t valueLen = sizeof(int32_t);
     DashboardPacketHeader_t header;
-    craftTelemetryPacket(&header, TYPE_INT32, keyLen, valueLen);
+    craftDashboardHeaderPacket(&header, ID_Telemetry, TYPE_INT32, keyLen, valueLen);
     return copyData(dashboard, &header, (uint8_t *) key, (uint8_t *) &value, keyLen, valueLen);
 }
 
@@ -167,7 +172,7 @@ Dashboard_Status_t Dashboard_Telemetry_Uint32(Dashboard_t *dashboard, const char
     uint16_t keyLen = strlen(key);
     uint16_t valueLen = sizeof(uint32_t);
     DashboardPacketHeader_t header;
-    craftTelemetryPacket(&header, TYPE_UINT32, keyLen, valueLen);
+    craftDashboardHeaderPacket(&header, ID_Telemetry, TYPE_UINT32, keyLen, valueLen);
     return copyData(dashboard, &header, (uint8_t *) key, (uint8_t *) &value, keyLen, valueLen);
 }
 
@@ -178,7 +183,7 @@ Dashboard_Status_t Dashboard_Telemetry_Float(Dashboard_t *dashboard, const char 
     uint16_t keyLen = strlen(key);
     uint16_t valueLen = sizeof(float);
     DashboardPacketHeader_t header;
-    craftTelemetryPacket(&header, TYPE_FLOAT, keyLen, valueLen);
+    craftDashboardHeaderPacket(&header, ID_Telemetry, TYPE_FLOAT, keyLen, valueLen);
     return copyData(dashboard, &header, (uint8_t *) key, (uint8_t *) &value, keyLen, valueLen);
 }
 

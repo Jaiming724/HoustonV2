@@ -111,6 +111,10 @@ typedef struct Dashboard {
 
 uint32_t crc32(const char *s, uint32_t n, uint32_t crc);
 
+void
+craftDashboardHeaderPacket(DashboardPacketHeader_t *packetHeader, uint8_t packetType, uint8_t contentType, uint16_t keyLen,
+                           uint16_t valueSize);
+
 Dashboard_Status_t Dashboard_Init(Dashboard_t *dashboard, fpSendData sendData,
                                   fpReadData readData, fpHasData hasData);
 

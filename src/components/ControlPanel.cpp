@@ -48,10 +48,17 @@ void ControlPanel::render() {
                 dataProducer = new SerialProducer();
             }
             dynamic_cast<SerialProducer *>(dataProducer)->setPort(inputText);
+
+            if(!dataProducer->start()){
+                delete dataProducer;
+                dataProducer = nullptr;
+                ImGui::Text("Failed to open port %s",inputText);
+                ImGui::End();
+                return;
+            }
             for (auto &component: *pVector) {
                 component->start();
             }
-            dataProducer->start();
             isEnable = true;
         }
     }

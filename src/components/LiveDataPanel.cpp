@@ -8,7 +8,47 @@ LiveDataPanel::~LiveDataPanel() {
 }
 
 void LiveDataPanel::start() {
-    Component::start();
+    refreshPackets();
+}
+
+void LiveDataPanel::refreshPackets() {
+    liveDataMap.clear();
+    intMap.clear();
+    floatMap.clear();
+    DashboardPacketHeader_t header;
+    craftDashboardHeaderPacket(&header, ID_Request_LiveData, 0, 0, 0);
+    DashboardPacketTail_t tail;
+    tail.payloadChecksum = 0;
+    std::vector<uint8_t> buffer;
+    buffer.resize(sizeof(DashboardPacketHeader_t) + sizeof(DashboardPacketTail_t));
+    std::memcpy(buffer.data(), &header, sizeof(DashboardPacketHeader_t));
+    std::memcpy(buffer.data() + sizeof(DashboardPacketHeader_t), &tail, sizeof(DashboardPacketTail_t));
+    dispatcher->sendData(std::move(buffer));
+}
+
+void LiveDataPanel::sendModifyPacket(uint8_t packetID, uint16_t valueType) {
+    DashboardPacketHeader_t header;
+    craftDashboardHeaderPacket(&header, ID_Modify, valueType, sizeof(LiveDataPacket_t), 0);
+
+    LiveDataPacket_t payload;
+    payload.packetID = packetID;
+    payload.valueType = valueType;
+    if (valueType == TYPE_FLOAT) {
+        payload.floatValue = *floatMap[packetID];
+    } else if (valueType == TYPE_BOOL) {
+        payload.boolValue = *reinterpret_cast<bool *>(intMap[packetID]);
+    } else {
+        payload.int32Value = *intMap[packetID];
+    }
+    DashboardPacketTail_t tail;
+    tail.payloadChecksum = crc32(reinterpret_cast<char *>(&payload), sizeof(LiveDataPacket_t), 0);
+    std::vector<uint8_t> buffer;
+    buffer.resize(sizeof(DashboardPacketHeader_t) + sizeof(LiveDataPacket_t) + sizeof(DashboardPacketTail_t));
+    std::memcpy(buffer.data(), &header, sizeof(DashboardPacketHeader_t));
+    std::memcpy(buffer.data() + sizeof(DashboardPacketHeader_t), &payload, sizeof(LiveDataPacket_t));
+    std::memcpy(buffer.data() + sizeof(DashboardPacketHeader_t) + sizeof(LiveDataPacket_t), &tail,
+                sizeof(DashboardPacketTail_t));
+    dispatcher->sendData(std::move(buffer));
 }
 
 void LiveDataPanel::render() {
@@ -32,70 +72,29 @@ void LiveDataPanel::render() {
     }
     ImGui::Begin("Live Data");
     for (const auto &it: liveDataMap) {
-        if (it.second.valueType == TYPE_FLOAT) {
-            ImGui::InputFloat(std::to_string(it.first).c_str(), floatMap[it.first], 0.1f, 1.0f,
-                                  "%.3f", 0);
 
-
-        } else if (it.second.valueType == TYPE_BOOL) {
-            ImGui::Checkbox(std::to_string(it.first).c_str(), reinterpret_cast<bool *>(intMap[it.first]));
-        } else {
-            ImGui::InputInt(std::to_string(it.first).c_str(), intMap[it.first], 1, 100,
-                            0);
-
-        }
-        ImGui::PushID(it.first);
-        if(ImGui::Button("Apply")){
-            DashboardPacketHeader_t header;
-            header.magicNumber = DashboardMagicNumber;
-            header.packetType = ID_Modify;
-            header.packetContentType = it.second.valueType;
-            header.timestamp = 0;
-            header.payloadKeySize = sizeof(LiveDataPacket_t);
-            header.payloadValueSize = 0;
-            LiveDataPacket_t payload;
-            payload.packetID = it.first;
-            payload.valueType = it.second.valueType;
-            if (it.second.valueType == TYPE_FLOAT) {
-                payload.floatValue = *floatMap[it.first];
-            } else if (it.second.valueType == TYPE_BOOL) {
-                payload.boolValue = *reinterpret_cast<bool *>(intMap[it.first]);
-            } else {
-                payload.int32Value = *intMap[it.first];
+        if (it.second.valueType == TYPE_BOOL) {
+            if (ImGui::Checkbox(std::to_string(it.first).c_str(), reinterpret_cast<bool *>(intMap[it.first]))) {
+                sendModifyPacket(it.first, it.second.valueType);
             }
-            header.checksum = crc32(reinterpret_cast<char *>(&header),sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0);
-            DashboardPacketTail_t tail;
-            tail.payloadChecksum = crc32(reinterpret_cast<char *>(&payload), sizeof(LiveDataPacket_t), 0);
-            std::vector<uint8_t> buffer;
-            buffer.resize(sizeof(DashboardPacketHeader_t) + sizeof(LiveDataPacket_t) + sizeof(DashboardPacketTail_t));
-            std::memcpy(buffer.data(), &header, sizeof(DashboardPacketHeader_t));
-            std::memcpy(buffer.data() + sizeof(DashboardPacketHeader_t), &payload, sizeof(LiveDataPacket_t));
-            std::memcpy(buffer.data() + sizeof(DashboardPacketHeader_t) + sizeof(LiveDataPacket_t), &tail, sizeof(DashboardPacketTail_t));
-            dispatcher->sendData(std::move(buffer));
-        }
-        ImGui::PopID();
+        } else {
+            if (it.second.valueType == TYPE_FLOAT) {
+                ImGui::InputFloat(std::to_string(it.first).c_str(), floatMap[it.first], 0.1f, 1.0f,
+                                  "%.3f", 0);
+            } else {
+                ImGui::InputInt(std::to_string(it.first).c_str(), intMap[it.first], 1, 100, 0);
+            }
 
+            ImGui::SameLine();
+            ImGui::PushID(it.first);
+            if (ImGui::Button("Apply")) {
+                sendModifyPacket(it.first, it.second.valueType);
+            }
+            ImGui::PopID();
+        }
     }
     if (ImGui::Button("Refresh")) {
-        liveDataMap.clear();
-        intMap.clear();
-        floatMap.clear();
-        DashboardPacketHeader_t header;
-        header.magicNumber = DashboardMagicNumber;
-        header.packetType = ID_Request_LiveData;
-        header.packetContentType = 0;
-        header.timestamp = 0;
-        header.payloadKeySize = 0;
-        header.payloadValueSize = 0;
-        header.checksum = crc32(reinterpret_cast<char *>(&header),
-                                sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0);
-        DashboardPacketTail_t tail;
-        tail.payloadChecksum = 0;
-        std::vector<uint8_t> buffer;
-        buffer.resize(sizeof(DashboardPacketHeader_t) + sizeof(DashboardPacketTail_t));
-        std::memcpy(buffer.data(), &header, sizeof(DashboardPacketHeader_t));
-        std::memcpy(buffer.data() + sizeof(DashboardPacketHeader_t), &tail, sizeof(DashboardPacketTail_t));
-        dispatcher->sendData(std::move(buffer));
+        refreshPackets();
     }
     ImGui::End();
 }
