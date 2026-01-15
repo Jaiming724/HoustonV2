@@ -21,6 +21,8 @@ public:
     }
 
     void dispatchData(std::vector<uint8_t> data) {
+
+
         if (data.size() < sizeof(DashboardPacketHeader_t)) {
             std::cerr << "Data too small to contain header" << std::endl;
             return;
@@ -37,11 +39,7 @@ public:
         }
 
         std::memcpy(&header, data.data(), sizeof(DashboardPacketHeader_t));
-        if (header.magicNumber != DashboardMagicNumber) {
-            std::cerr << "Invalid magic number" << std::endl;
-            return;
-        }
-        if (crc32((char *) data.data(), sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0) != header.checksum) {
+        if (crc16((char *) data.data(), sizeof(DashboardPacketHeader_t) - sizeof(header.checksum), 0) != header.checksum) {
             std::cerr << "Checksum mismatch" << std::endl;
             return;
         }
@@ -56,10 +54,9 @@ public:
             std::cerr << "Payload checksum mismatch" << std::endl;
             return;
         }
-        //std::string key((char *) &data[sizeof(DashboardPacketHeader_t)], payloadSize);
-       // std::cout << "Dispatching data with key: " << key << std::endl;
-        getHandler(header.packetType)->consume(std::move(data));
 
+        getHandler(header.packetType)->consume(std::move(data));
+        std::cout << "Dispatching data with key: " << header.packetType << std::endl;
     }
 
     std::vector<std::vector<uint8_t>> &getTxData() {

@@ -7,9 +7,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-enum {
-    DashboardMagicNumber = 0xADEC
-};
+
 typedef enum {
     DASHBOARD_OK = 0,
     DASHBOARD_ERR_INVALID_ARG,
@@ -50,13 +48,12 @@ typedef enum {
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 typedef struct {
-    uint16_t magicNumber;
     uint8_t packetType;
     uint8_t packetContentType;
     uint16_t payloadKeySize;
     uint16_t payloadValueSize;
     uint32_t timestamp;
-    uint32_t checksum;
+    uint16_t checksum;
 } DashboardPacketHeader_t;
 typedef struct {
     uint16_t packetID;
@@ -76,13 +73,12 @@ typedef struct {
 // Otherwise, assume GCC/Clang
 #else
 typedef struct __attribute__((packed)) {
-    uint16_t magicNumber;
     uint8_t packetType;
     uint8_t packetContentType;
     uint16_t payloadKeySize;
     uint16_t payloadValueSize;
     uint32_t timestamp;
-    uint32_t checksum;
+    uint16_t checksum;
 } DashboardPacketHeader_t;
 typedef struct __attribute__((packed)) {
     uint16_t packetID;
@@ -110,6 +106,7 @@ typedef struct Dashboard {
 } Dashboard_t;
 
 uint32_t crc32(const char *s, uint32_t n, uint32_t crc);
+uint16_t crc16(const char *s, uint32_t n, uint16_t crc);
 
 void
 craftDashboardHeaderPacket(DashboardPacketHeader_t *packetHeader, uint8_t packetType, uint8_t contentType, uint16_t keyLen,

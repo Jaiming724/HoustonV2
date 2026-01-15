@@ -18,13 +18,12 @@ void
 craftDashboardHeaderPacket(DashboardPacketHeader_t *packetHeader, uint8_t packetType, uint8_t contentType,
                            uint16_t keyLen,
                            uint16_t valueSize) {
-    packetHeader->magicNumber = DashboardMagicNumber;
     packetHeader->packetType = packetType;
     packetHeader->packetContentType = contentType;
     packetHeader->payloadKeySize = keyLen;
     packetHeader->payloadValueSize = valueSize;
     packetHeader->timestamp = 0; // Could add timestamping if needed
-    packetHeader->checksum = crc32((char *) packetHeader, sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0);
+    packetHeader->checksum = crc16((char *) packetHeader, sizeof(DashboardPacketHeader_t) - sizeof(packetHeader->checksum), 0);
 }
 
 static Dashboard_Status_t
@@ -193,13 +192,7 @@ Dashboard_Status_t Dashboard_Alert(Dashboard_t *dashboard, const char *str) {
     }
     uint32_t strLen = strlen(str);
     DashboardPacketHeader_t header;
-    header.packetType = ID_Alert;
-    header.magicNumber = DashboardMagicNumber;
-    header.packetContentType = TYPE_STRING;
-    header.payloadKeySize = 0;
-    header.payloadValueSize = strLen;
-    header.timestamp = 0; // Could add timestamping if needed
-    header.checksum = crc32((char *) &header, sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0);
+    craftDashboardHeaderPacket(&header, ID_Alert, TYPE_STRING, 0, strLen);
     uint32_t writeSize = sizeof(DashboardPacketHeader_t);
     memcpy(&alertBuffer[0], &header, sizeof(DashboardPacketHeader_t));
     memcpy(&alertBuffer[writeSize], str, strLen);
@@ -228,7 +221,7 @@ Dashboard_Status_t Dashboard_Update(Dashboard_t *dashboard) {
     DashboardPacketHeader_t *header = (DashboardPacketHeader_t *) rxBuffer;
     if (dashboard->packetStatus == Dashboard_Packet_WAITING && status && count > sizeof(DashboardPacketHeader_t)) {
         dashboard->readData(rxBuffer, sizeof(DashboardPacketHeader_t));
-        if (crc32((char *) header, sizeof(DashboardPacketHeader_t) - sizeof(uint32_t), 0) == header->checksum) {
+        if (crc16((char *) header, sizeof(DashboardPacketHeader_t) - sizeof(header->checksum), 0) == header->checksum) {
             uint32_t totalPacketSize = sizeof(DashboardPacketHeader_t) +
                                        header->payloadKeySize + header->payloadValueSize +
                                        sizeof(DashboardPacketTail_t);
@@ -281,5 +274,21 @@ uint32_t crc32(const char *s, uint32_t n, uint32_t crc) {
         }
     }
 
+    return crc;
+}
+
+uint16_t crc16(const char *s, uint32_t n, uint16_t crc) {
+    const uint8_t *p = (const uint8_t *)s;
+
+    for (uint32_t i = 0; i < n; i++) {
+        crc ^= p[i];
+        for (uint32_t j = 0; j < 8; j++) {
+            if (crc & 1) {
+                crc = (crc >> 1) ^ 0xA001;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
     return crc;
 }
