@@ -10,9 +10,11 @@ private:
     std::vector<Component *> *pVector;
     bool isEnable = false;
     DataProducer *dataProducer = nullptr;
-public:
+    std::vector<std::string> availablePorts;
+    int selectedPortIndex = 0;
 
-    ControlPanel(const char *name, Dispatcher *dispatcher, std::vector<Component *> *pVector) : Component(name,dispatcher) {
+public:
+    ControlPanel(const char *name, Dispatcher *dispatcher, std::vector<Component *> *pVector) : Component(name, dispatcher) {
         this->pVector = pVector;
     }
 

@@ -1,42 +1,44 @@
 #pragma once
 
+#include <algorithm>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <filesystem>
+#endif
 namespace Util {
-
-    inline auto splitString(std::string in, char sep) {
-        std::vector<std::string> r;
-        r.reserve(std::count(in.begin(), in.end(), sep) + 1); // optional
-        for (auto p = in.begin();; ++p) {
-            auto q = p;
-            p = std::find(p, in.end(), sep);
-            r.emplace_back(q, p);
-            if (p == in.end())
-                return r;
+    inline std::vector<std::string> getAvailablePorts() {
+        std::vector<std::string> ports;
+#ifdef _WIN32
+        char portPath[20];
+        for (int i = 1; i <= 256; ++i) {
+            std::sprintf(portPath, "\\\\.\\COM%d", i);
+            HANDLE hSerial = CreateFile(portPath, GENERIC_READ | GENERIC_WRITE, 0, 0,
+                                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+            if (hSerial != INVALID_HANDLE_VALUE) {
+                ports.push_back("COM" + std::to_string(i));
+                CloseHandle(hSerial);
+            }
         }
+#else
+        const std::string prefixes[] = {"ttyUSB", "ttyACM", "tty.", "cu."};
+        if (std::filesystem::exists("/dev")) {
+            for (const auto &entry: std::filesystem::directory_iterator("/dev")) {
+                std::string filename = entry.path().filename().string();
+                for (const auto &prefix: prefixes) {
+                    if (filename.compare(0, prefix.length(), prefix) == 0) {
+                        ports.push_back(entry.path().string());
+                        break;
+                    }
+                }
+            }
+        }
+#endif
+        return ports;
     }
-
-    inline uint16_t toLittleEndian16(uint16_t value) {
-        return ((value & 0xFF) << 8) | ((value & 0xFF00) >> 8);
-    }
-
-// Function to convert a 32-bit integer to little-endian
-    inline uint32_t toLittleEndian32(uint32_t value) {
-        return ((value & 0xFF) << 24) | ((value & 0xFF00) << 8) | ((value & 0xFF0000) >> 8) |
-               ((value & 0xFF000000) >> 24);
-    }
-
-    struct ModifyPacket {
-        uint8_t packet_id = 13;
-        uint16_t packet_length = 0x3;
-        char string_data[3] = {0};
-        union {
-            float float_data;
-            uint32_t int_data;
-        };
-        uint32_t checksum;
-    };
 
     struct ScrollingBuffer {
         int MaxSize;
@@ -65,4 +67,4 @@ namespace Util {
             }
         }
     };
-}
+} // namespace Util
